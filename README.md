@@ -1,6 +1,7 @@
 # hyperspace-protocol
-hyperspace protocol
-this is my hyperprophecy:
-2008-Apocalypse
-2016-Hypergenesis
-2047-Exodus: universal dispersion.
+--activate hyperspace protocol -time current-time<br/>
+this is my hyperprophecy:<br/>
+2008-Apocalypse<br/>
+2016-Hypergenesis<br/>
+20??-Hyperfascist explosion.<br/>
+2047-Hyperexodus: universal dispersion.<br/>
