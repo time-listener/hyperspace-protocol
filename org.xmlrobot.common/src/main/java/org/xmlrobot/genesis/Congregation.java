@@ -148,8 +148,9 @@ public interface Congregation<T>
 	extends PastCallable<T>,
 		Comparator<T>, 
 			Enumeration<T>, 
-				Iterable<T> {
-					//Collection<T>
+				Iterable<T>,
+					MassListener {
+						//Collection<T>
 	/**
      * The parent.
      */
@@ -161,60 +162,65 @@ public interface Congregation<T>
     public static final String CHILD = "congregation.child";
 
 	/**
-     * Ensures that this inheritance contains the specified child (optional
-     * operation).  Returns <tt>true</tt> if this inheritance changed as a
-     * result of the call.  (Returns <tt>false</tt> if this inheritance does
+	 * The root.
+	 */
+	public static final String ROOT = "congregation.root";
+	
+	/**
+     * Ensures that this congregation contains the specified child (optional
+     * operation).  Returns <tt>true</tt> if this congregation changed as a
+     * result of the call.  (Returns <tt>false</tt> if this congregation does
      * not permit duplicates and already contains the specified child.)<p>
      *
      * Collections that support this operation may place limitations on what
-     * children may be added to this inheritance.  In particular, some
+     * children may be added to this congregation.  In particular, some
      * congregations will refuse to add <tt>null</tt> children, and others will
      * impose restrictions on the type of children that may be added.
-     * inheritance classes should clearly specify in their documentation any
+     * congregation classes should clearly specify in their documentation any
      * restrictions on what children may be added.<p>
      *
-     * If a inheritance refuses to add a particular child for any reason
+     * If a congregation refuses to add a particular child for any reason
      * other than that it already contains the child, it <i>must</i> throw
      * an exception (rather than returning <tt>false</tt>).  This preserves
-     * the invariant that a inheritance always contains the specified child
+     * the invariant that a congregation always contains the specified child
      * after this call returns.
      *
-     * @param e child whose presence in this inheritance is to be ensured
-     * @return <tt>true</tt> if this inheritance changed as a result of the
+     * @param e child whose presence in this congregation is to be ensured
+     * @return <tt>true</tt> if this congregation changed as a result of the
      *         call
      * @throws UnsupportedOperationException if the <tt>add</tt> operation
-     *         is not supported by this inheritance
+     *         is not supported by this congregation
      * @throws ClassCastException if the class of the specified child
-     *         prevents it from being added to this inheritance
+     *         prevents it from being added to this congregation
      * @throws NullPointerException if the specified child is null and this
-     *         inheritance does not permit null children
+     *         congregation does not permit null children
      * @throws IllegalArgumentException if some property of the child
-     *         prevents it from being added to this inheritance
+     *         prevents it from being added to this congregation
      * @throws IllegalStateException if the child cannot be added at this
      *         time due to insertion restrictions
      */
 	public boolean add(T e);
 	
 	/**
-     * Adds all of the elements in the specified collection to this collection
+     * Adds all of the elements in the specified congregation to this congregation
      * (optional operation). The behavior of this operation is undefined if
-     * the specified collection is modified while the operation is in progress.
+     * the specified congregation is modified while the operation is in progress.
      * (This implies that the behavior of this call is undefined if the
-     * specified collection is this collection, and this collection is
+     * specified congregation is this congregation, and this congregation is
      * nonempty.)
      *
-     * @param c collection containing elements to be added to this collection
-     * @return <tt>true</tt> if this collection changed as a result of the call
+     * @param c congregation containing elements to be added to this congregation
+     * @return <tt>true</tt> if this congregation changed as a result of the call
      * @throws UnsupportedOperationException if the <tt>addAll</tt> operation
-     *         is not supported by this collection
+     *         is not supported by this congregation
      * @throws ClassCastException if the class of an element of the specified
-     *         collection prevents it from being added to this collection
-     * @throws NullPointerException if the specified collection contains a
-     *         null element and this collection does not permit null elements,
-     *         or if the specified collection is null
+     *         congregation prevents it from being added to this congregation
+     * @throws NullPointerException if the specified congregation contains a
+     *         null element and this congregation does not permit null elements,
+     *         or if the specified congregation is null
      * @throws IllegalArgumentException if some property of an element of the
-     *         specified collection prevents it from being added to this
-     *         collection
+     *         specified congregation prevents it from being added to this
+     *         congregation
      * @throws IllegalStateException if not all the elements can be added at
      *         this time due to insertion restrictions
      * @see #add(Object)
@@ -229,11 +235,11 @@ public interface Congregation<T>
 	T call(int N);
 
 	/**
-     * Removes all of the children from this inheritance (optional operation).
-     * The inheritance will be empty after this method returns.
+     * Removes all of the children from this congregation (optional operation).
+     * The congregation will be empty after this method returns.
      *
      * @throws UnsupportedOperationException if the <tt>clear</tt> operation
-     *         is not supported by this inheritance
+     *         is not supported by this congregation
      */
 	public void clear();
 	
@@ -246,34 +252,34 @@ public interface Congregation<T>
 
 	/**
      * This implementation iterates recursively over
-     * the elements in the inheritance, checking each child 
+     * the elements in the congregation, checking each child 
      * in turn for equality with the specified child.
-     * @return true if entity is contained inside the inheritance
+     * @return true if entity is contained inside the congregation
      */
     boolean contains(T c);
 
 	/**
-     * Returns <tt>true</tt> if this collection contains all of the elements
-     * in the specified collection.
+     * Returns <tt>true</tt> if this congregation contains all of the elements
+     * in the specified congregation.
      *
-     * @param  c collection to be checked for containment in this collection
-     * @return <tt>true</tt> if this collection contains all of the elements
-     *         in the specified collection
+     * @param  c congregation to be checked for containment in this congregation
+     * @return <tt>true</tt> if this congregation contains all of the elements
+     *         in the specified congregation
      * @throws ClassCastException if the types of one or more elements
-     *         in the specified collection are incompatible with this
-     *         collection
+     *         in the specified congregation are incompatible with this
+     *         congregation
      *         (<a href="#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified collection contains one
-     *         or more null elements and this collection does not permit null
+     * @throws NullPointerException if the specified congregation contains one
+     *         or more null elements and this congregation does not permit null
      *         elements
      *         (<a href="#optional-restrictions">optional</a>),
-     *         or if the specified collection is null.
+     *         or if the specified congregation is null.
      * @see    #contains(Object)
      */
     boolean containsAll(T c);
 
 	/**
-	 * Counts all members submitted by the inheritance.
+	 * Counts all members submitted by the congregation.
 	 * @param counter recursion counter
 	 * @return the current depth
 	 */
@@ -286,8 +292,8 @@ public interface Congregation<T>
 	int depth();
     
 	/**
-     * Compares the specified object with this inheritance for equality.
-     * Returns <tt>true</tt> if the given object is also a DNA inheritance and
+     * Compares the specified object with this congregation for equality.
+     * Returns <tt>true</tt> if the given object is also a DNA congregation and
      * the two entries represent the same mapping.  More formally, two
      * entries <tt>e1</tt> and <tt>e2</tt> represent the same mapping
      * if<pre>
@@ -299,11 +305,23 @@ public interface Congregation<T>
      * This ensures that the <tt>equals</tt> method works properly across
      * different implementations of the <tt>TimeListener</tt> interface.
      *
-     * @param o object to be compared for equality with this map inheritance
+     * @param o object to be compared for equality with this map congregation
      * @return <tt>true</tt> if the specified object is equal to this map
-     *         inheritance
+     *         congregation
      */
     boolean equals(Object o);
+
+	/**
+	 * Returns the root of inheritance.
+	 * @return the root of inheritance
+	 */
+	T getRoot();
+
+	/**
+	 * Sets the root of inheritance.
+	 * @param root the root of inheritance
+	 */
+	void setRoot(T root);
 	
     /**
 	 * Returns the child of inheritance.
@@ -396,14 +414,14 @@ public interface Congregation<T>
 	void polarize(T parent, T child);
 
 	/**
-	 * Liberates process from the inheritance cycle.
-	 * @return the released entity.
+	 * Liberates the top parent from the inheritance cycle.
+	 * @return the current parent of inheritance.
 	 */
 	T release();
 	
 	/**
 	 * Releases the last child of the inheritance.
-	 * @return the polled child.
+	 * @return the new parent of inheritance.
 	 */
 	T releaseChild();
 	

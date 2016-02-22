@@ -9,7 +9,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.concurrent.Future;
 
 /**
  * This interface imposes a absolute ordering on the objects of each class that
@@ -77,7 +76,7 @@ import java.util.concurrent.Future;
  * @see org.xmlrobot.genesis.TimeListener.Transmitter
  * @since before BigBang
  */
-public interface Reproducible<V> extends Future<V>, Comparable<V> {
+public interface Reproducible<V> extends Output<V>, Comparable<V> {
 	
     /**
      * Reproduces this object with the specified object for order.  Returns a

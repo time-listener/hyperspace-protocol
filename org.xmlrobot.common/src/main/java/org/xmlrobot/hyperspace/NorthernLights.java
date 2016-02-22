@@ -17,7 +17,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.xmlrobot.genesis.TimeListener;
-import org.xmlrobot.horizon.Takion;
+import org.xmlrobot.horizon.Tachyon;
 import org.xmlrobot.util.Parity;
 
 /**
@@ -158,7 +158,7 @@ public abstract class NorthernLights
 
 			TimeListener<K,V> listener = (TimeListener<K,V>) unmarshaller
 					.unmarshal(inputStream);
-			push(new Takion<K,V>(listener) {
+			push(new Tachyon<K,V>(listener) {
 				/**
 				 * -1045546931371948769L
 				 */

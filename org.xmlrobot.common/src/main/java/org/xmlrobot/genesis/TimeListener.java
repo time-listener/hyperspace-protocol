@@ -40,7 +40,7 @@ package org.xmlrobot.genesis;
  * @param <V> is the value
  */
 public interface TimeListener<K,V>
-	extends Congregation<K>, Phaser<V>, Deflector {
+	extends Congregation<K>, Phaser<V> {
 
 	/**
 	 * The key.
@@ -72,7 +72,7 @@ public interface TimeListener<K,V>
 	 * @see org.xmlrobot.genesis.MassListener#dna()
 	 */
 	TimeListener<K,V> dna();
-
+	
     /**
 	 * @return the inherited type
 	 */
@@ -117,13 +117,13 @@ public interface TimeListener<K,V>
 		 * @param child the child to be pushed
 		 * @return true is push was successful
 		 */
-		void push(K child);
+		void inject(K child);
 		
 		/**
 		 * Injects value's child to the current output value.
 		 * @param child the child to be injected
 		 * @return true if injection was successful
 		 */
-		void inject(V child);
+		void push(V child);
 	}
 }

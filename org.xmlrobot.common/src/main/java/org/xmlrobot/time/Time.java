@@ -3,13 +3,14 @@
  */
 package org.xmlrobot.time;
 
+import java.util.Iterator;
 import java.util.concurrent.Future;
 
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.xmlrobot.genesis.TimeListener;
 import org.xmlrobot.genesis.Past;
-import org.xmlrobot.horizon.Takion;
+import org.xmlrobot.horizon.Tachyon;
 import org.xmlrobot.util.Parity;
 
 /**
@@ -44,6 +45,47 @@ public abstract class Time
 	 */
 	private static final long serialVersionUID = -1901517319441053527L;
 	
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.TimeListener#getRoot()
+	 */
+	@Override
+	@XmlTransient
+	public K getRoot() {
+		return message.getRoot();
+	}
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.TimeListener#setRoot(java.lang.Object)
+	 */
+	@Override
+	public void setRoot(K root) {
+		// set property
+		message.setRoot(root);
+		// update hyperspace
+		update();
+	}
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.TimeListener#getStem()
+	 */
+	@Override
+	@XmlTransient
+	public V getStem() {
+		return message.getStem();
+	}
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.TimeListener#setStem(java.lang.Object)
+	 */
+	@Override
+	public void setStem(V stem) {
+		// check existence
+		if(stem != null)
+			// stem is ordering you
+			addMassListener(stem);
+		// set property
+		message.setStem(stem);
+		// update hyperspace
+		update();
+	}
+	
 	/**
      * {@link Time} default class constructor.
      */
@@ -57,8 +99,9 @@ public abstract class Time
 	 */
 	protected Time(Class<? extends K> type, K parent) {
 		super(type, parent.getGen());
-		// send masses to stem
-		addMassListener(parent.get());
+		// inherit father and mother
+		setRoot(parent);
+		setStem(parent.get());
 	}
 	/**
 	 * {@link Time} class constructor.
@@ -67,6 +110,8 @@ public abstract class Time
 	 */
 	protected Time(Class<? extends K> type, Parity gen) {
 		super(type, gen);
+		// it is the root
+		setRoot(call());
 	}
 	/**
 	 * {@link Time} class constructor.
@@ -76,8 +121,9 @@ public abstract class Time
 	 */
 	protected Time(Class<? extends K> type, V value, K parent) {
 		super(type, value, parent);
-		// send masses to stem
-		addMassListener(parent.get());
+		// inherit father and mother
+		setRoot(parent);
+		setStem(parent.get());
 	}
 	/**
 	 * {@link Time} class constructor.
@@ -87,6 +133,9 @@ public abstract class Time
 	 */
 	protected Time(Class<? extends K> type, V value, Parity gen) {
 		super(type, value, gen);
+		// inherit myself
+		setRoot(call());
+		setStem(value);
 	}
 	/**
      * {@link Time} class constructor.
@@ -96,8 +145,9 @@ public abstract class Time
 	 */
 	protected Time(Class<? extends K> type, Class<? extends V> antitype, K parent) {
 		super(type, antitype, parent);
-		// send masses to stem
-		addMassListener(parent.get());
+		// inherit father and mother
+		setRoot(parent);
+		setStem(parent.get());
 	}
 	/**
 	 * {@link Time} class constructor.
@@ -107,14 +157,28 @@ public abstract class Time
 	 */
 	protected Time(Class<? extends K> type, Class<? extends V> antitype, Parity gen) {
 		super(type, antitype, gen);
+		// I am the root
+		setRoot(call());
+		setStem(get());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.hyperspace.Recursion#set(org.xmlrobot.genesis.TimeListener)
+	 */
+	@Override
+	public void set(V value) {
+		super.set(value);
+		// unify stem if null
+		if(getStem() == null) {
+			setStem(value);
+		}
+	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.hyperspace.Recursion#pulse(org.xmlrobot.genesis.TimeListener, org.xmlrobot.horizon.Takion)
 	 */
 	@Override
 	public <X extends TimeListener<X,Y>,Y extends TimeListener<Y,X>> 
-		void pulse(TimeListener<?, ?> sender, Takion<Y, X> event) {
+		void pulse(TimeListener<?,?> sender, Tachyon<Y,X> event) {
 		super.pulse(sender, event);
 		// rotate-revolve dna-chain
 		event.spin();
@@ -124,4 +188,89 @@ public abstract class Time
 	 */
 	@Override
 	public abstract int compare(K o1, K o2);
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Iterable#iterator()
+	 */
+	@Override
+	public Iterator<K> iterator() {
+
+		switch (getGen()) 
+		{
+		case XY:
+			return new PastIterator(call());
+		default:
+			return new FutureIterator(call());
+		}
+	}
+    /**
+     * Iterator of the future implementation class.
+     * Iterates across time concurrently to the future.
+     * <br<br>
+     * @author joan
+     *
+     */
+    protected class FutureIterator
+    	extends InheritanceIterator
+    		implements Iterator<K> {
+
+    	/**
+    	 * 
+    	 */
+    	public FutureIterator(K entity) {
+    		super(entity);
+    	}
+    	/* (non-Javadoc)
+    	 * @see java.util.Iterator#next()
+    	 */
+    	@Override
+    	public K next() {
+    		return this.forward();
+    	}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.time.Metaphysical.InheritanceIterator#remove()
+		 */
+		@Override
+		public void remove() {
+    		K child = current.getChild();
+    		current.remove();
+    		current = child;
+		}
+    }
+    /**
+     * Iterator of the past implementation class.
+     * Iterates through time recurrently to the past.
+     * @author joan
+     *
+     */
+    protected class PastIterator
+		extends InheritanceIterator
+	   		implements Iterator<K> {
+    	
+    	/**
+    	 * 
+    	 */
+    	public PastIterator(K entity) {
+    		super(entity);
+    	}
+    	/*
+    	 * (non-Javadoc)
+    	 * @see java.util.Iterator#next()
+    	 */
+    	@Override
+    	public K next() {
+    		return this.backward();
+    	}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.time.Metaphysical.InheritanceIterator#remove()
+		 */
+		@Override
+		public void remove() {
+			if(current != null) {
+				K parent = current.getParent();
+	    		current.remove();
+	    		current = parent;
+			}
+		}
+    }
 }

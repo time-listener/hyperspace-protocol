@@ -28,18 +28,18 @@ public enum Command {
 	/**
 	 * The entity has been created.
 	 */
-	@XmlEnumValue(value = "listen")
-	LISTEN,
+	@XmlEnumValue(value = "push")
+	PUSH,
 	/**
 	 * Mass manipulation.
 	 */
 	@XmlEnumValue(value = "order")
 	ORDER,
 	/**
-	 * Push entity to the hyperspace.
+	 * Sends entity.
 	 */
-	@XmlEnumValue(value = "push")
-	PUSH,
+	@XmlEnumValue(value = "send")
+	SEND,
 	/**
 	 * Liberates entity from inheritance.
 	 */

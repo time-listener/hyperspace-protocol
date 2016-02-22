@@ -10,7 +10,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceEvent;
 import org.xmlrobot.genesis.MassListener;
 import org.xmlrobot.genesis.TimeListener;
-import org.xmlrobot.horizon.Takion;
+import org.xmlrobot.horizon.Tachyon;
 import org.xmlrobot.util.Parity;
 
 
@@ -119,7 +119,7 @@ public abstract class Abstraction
 	 * @see org.xmlrobot.hyperspace.Abstraction#mass(org.xmlrobot.genesis.Message, org.xmlrobot.horizon.Darkmass)
 	 */
 	@Override
-	public abstract void mass(MassListener sender, Takion<?,?> event);
+	public abstract void mass(MassListener sender, Tachyon<?,?> event);
 	
 	/* (non-Javadoc)-
 	 * @see org.osgi.framework.ServiceListener#serviceChanged(org.osgi.framework.ServiceEvent)

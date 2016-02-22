@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.xmlrobot.genesis.TimeListener;
-import org.xmlrobot.horizon.Takion;
+import org.xmlrobot.horizon.Tachyon;
 import org.xmlrobot.util.Command;
 import org.xmlrobot.util.Parity;
 
@@ -93,22 +93,6 @@ public abstract class Hyperspace
     protected Hyperspace(Class<? extends K> type, Class<? extends V> antitype, Parity gen) {
 		super(type, antitype, gen);
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.Hypergenesis#run()
-	 */
-	@Override
-	public void run() {
-		// call ancestral method
-		super.run();
-		// declare future
-		V future;
-		// assign and check
-		if((future = get()) != null) {
-			// register opposite instance
-			future.start(getContext());
-		}
-	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.Hypergenesis#start(org.osgi.framework.BundleContext)
 	 */
@@ -168,7 +152,7 @@ public abstract class Hyperspace
 		// stream entity's properties
 		update();
 		// submit abstract command into the hyperspace
-		push(new Takion<K,V>(this) {
+		push(new Tachyon<K,V>(this) {
 			/**
 			 * 3217060066232920443L
 			 */
@@ -180,7 +164,7 @@ public abstract class Hyperspace
 	 */
 	public void pùsh(V o) {
 		// submit abstract command into the hyperspace
-		push(new Takion<V,K>(o) {
+		push(new Tachyon<V,K>(o) {
 
 			/**
 			 * 

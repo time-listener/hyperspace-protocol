@@ -12,7 +12,7 @@ import org.osgi.framework.AllServiceListener;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
-import org.xmlrobot.horizon.Takion;
+import org.xmlrobot.horizon.Tachyon;
 import org.xmlrobot.hyperspace.Hyperspace;
 import org.xmlrobot.time.Time;
 import org.xmlrobot.util.Command;
@@ -48,11 +48,12 @@ public interface MassListener
 		BundleActivator, 
 			BundleTerminator,
 				Cloneable,
-					EventListener,
-						Executor,
-							Runnable,
-								Serializable,
-									ThreadFactory {
+					Deflector,
+						EventListener,
+							Executor,
+								Runnable,
+									Serializable,
+										ThreadFactory {
 	/**
 	 * The family.
 	 */
@@ -81,12 +82,12 @@ public interface MassListener
 	/**
 	 * The parity.
 	 */
-	public static final String PARITY = "time-listener.parity";
+	public static final String PARITY = "mass-listener.parity";
 	
 	/**
 	 * The dna.
 	 */
-	public static final String DNA = "time-listener.dna";
+	public static final String DNA = "mass-listener.dna";
 	
 	/**
 	 * The inheritance mass.
@@ -150,11 +151,11 @@ public interface MassListener
 	void addMassListener(MassListener listener);
 
 	/**
-	 * A {@link Takion} is being transmitted to the past.
+	 * A {@link Tachyon} is being transmitted to the past.
 	 * @param sender {@link MassListener} the sender entity
-	 * @param event {@link Takion} the mass being sent to the past
+	 * @param event {@link Tachyon} the mass being sent to the past
 	 */
-	void mass(MassListener sender, Takion<?,?> event);
+	void mass(MassListener sender, Tachyon<?,?> event);
 
 	/**
 	 * Sets the current {@link Command}.

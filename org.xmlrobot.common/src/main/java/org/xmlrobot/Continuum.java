@@ -45,12 +45,19 @@ import org.xmlrobot.util.Parity;
  * 
  * @author joan
  * @since 0
+ * 
+ * @param <K> is the key
+ * @param <V> is the value
+ * @param <T> is the type
+ * @param <U> is the antitype
  */
 @XmlTransient
 public abstract class Continuum
-	<K extends Continuum<K,V>,
-	 V extends Continuum<V,K>>
-			extends Time<K,V> {
+	<K extends TimeListener<? super K,? super V>,
+	 V extends TimeListener<? super V,? super K>,
+	 	T extends Continuum<K,V,T,U>,
+	 	U extends Continuum<V,K,U,T>>
+			extends Time<T,U> {
 
 	/**
 	 * -6900494353672148882L
@@ -58,23 +65,40 @@ public abstract class Continuum
 	private static final long serialVersionUID = -6900494353672148882L;
 	
 	/**
-	 * The Continuum framework.
+	 * The <tt>continuum framework</tt>.
 	 */
 	private Framework framework;
 	
 	/**
-	 * @return
+	 * The <tt>universal genoma chain</tt>.
+	 */
+	private final String[] message;
+	
+	/**
+	 * Reveals the <tt>universal genoma chain</tt>.
+	 * @return the <tt>universal genoma chain</tt>
+	 */
+	public String[] getMessage() {
+		return message;
+	}
+	/**
+	 * Reveals the <tt>continuum framework</tt>.
+	 * @return the <tt>continuum framework</tt>
 	 */
 	@XmlTransient
 	public Framework getFramework() {
 		return framework;
 	}
 	/**
-	 * @param framework
+	 * Establishes the <tt>continuum framework</tt>
+	 * @param framework {@link Framework} the <tt>continuum framework</tt> to be established
 	 */
 	public void setFramework(Framework framework) {
+		// check existence
 		if(framework != null) {
+			// listen everything
 			framework.getBundleContext().addServiceListener(this);
+			// assign
 			this.framework = framework;
 		}
 	}
@@ -84,7 +108,6 @@ public abstract class Continuum
 	@Override
 	@XmlTransient
 	public BundleContext getContext() {
-		
 		return framework.getBundleContext();
 	}
 	/* (non-Javadoc)
@@ -106,79 +129,87 @@ public abstract class Continuum
 	 */
 	public Continuum() {
 		super();
+		this.message = new String[] { 
+				// the ABC
+				"A", "B", "C", "D", "E", "F", "G", "H", "I", 
+				"J", "K", "L", "M", "N", "O", "P", "Q", "R", 
+				"S", "T", "U", "V", "w", "X", "Y", "Z", "Ñ", "Ç" };
 	}
 	/**
-	 * @param type
+	 * Q Continuum class constructor.
+	 * @param type the type
 	 */
-	public Continuum(Class<? extends K> type) {
+	public Continuum(Class<? extends T> type, String[] message) {
 		super(type, Parity.YY);
-		
+		// inherit message
+		this.message = message;
+		// try
 		try {
 			// create hyperspace
-			framework = Genoma.createFramework();
+			Framework framework = Genoma.createFramework();
 			// initialize hyperspace
 			framework.init();
 			// start hyperspace
 			framework.start();
-			// listen everything
-			framework.getBundleContext().addServiceListener(this);
+			// set the framework
+			setFramework(framework);
 		}
+		// catch
 		catch (BundleException e) {
+			// throw new abort
 			throw new Abort(e);
 		}
 	}
 	/**
-	 * @param type
-	 * @param antitype
+	 * Continuum Q class constructor.
+	 * @param type the type
+	 * @param antitype the antitype
 	 */
-	public Continuum(Class<? extends K> type, Class<? extends V> antitype) {
-		
-		super(type, antitype, Parity.YY);
+	public Continuum(Class<? extends T> type, Class<? extends U> antitype, String[] message) {
+		// call hyperconstructor
+		super(type, instance(antitype, message), Parity.YY);
+		// inherit message
+		this.message = message;
+		// bong
+		create(message).start(getContext());
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.time.Inheritance#clone()
+	 */
+	@Override
+	public TimeListener<T,U> clone() {
+		return super.clone();
+	}
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.hyperspace.Recursion#set(org.xmlrobot.genesis.TimeListener)
+	 */
+	@Override
+	public void set(U value) {
+		// unify
+		super.set(value);
+		// check existence
+		if(value != null) {
+			// unify frameworks
+			value.setFramework(framework);
+			// big
+			create(message).start(framework.getBundleContext());
+		}
+		else throw new Abort();
+	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.time.Time#compare(org.xmlrobot.genesis.TimeListener, org.xmlrobot.genesis.TimeListener)
 	 */
 	@Override
-	public int compare(K o1, K o2) {
-
+	public int compare(T o1, T o2) {
 		return o1.getFramework().compareTo(o2.getFramework());
 	}
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.Hypergenesis#matrix()
-	 */
-	@Override
-	public org.xmlrobot.genesis.TimeListener.Transmitter<K, V> matrix() {
-
- 		TimeListener.Transmitter<K,V> m;
- 		return (m = matrix) != null ? m : (matrix = new Computer());
-	}
-
-	
 	/**
-	 * Quantum bionical computer implementation class.
-	 * @author joan
-	 *
+	 * Orders current instance to create.
+	 * @return the current instance creation
 	 */
-	protected class Computer
-		extends Comparator {
+	public abstract K create(String[] message);
 
-		/* (non-Javadoc)
-		 * @see org.xmlrobot.Hypergenesis.Comparator#push(org.xmlrobot.genesis.TimeListener)
-		 */
-		@Override
-		public void push(K child) {
-			output().get().add(child);
-		}
-		/* (non-Javadoc)
-		 * @see org.xmlrobot.Hypergenesis.Comparator#inject(org.xmlrobot.genesis.TimeListener)
-		 */
-		@Override
-		public void inject(V child) {
-			output().add(child);
-		}
-	}
-	
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.hyperspace.Abstraction#serviceChanged(org.osgi.framework.ServiceEvent)
 	 */
@@ -186,20 +217,32 @@ public abstract class Continuum
 	public abstract void serviceChanged(ServiceEvent event);
 	
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.hyperspace.Recursion#set(org.xmlrobot.genesis.TimeListener)
+	 * @see org.xmlrobot.Hypergenesis#matrix()
 	 */
 	@Override
-	public void set(V value) {
-		if(value != null)
-			// unify frameworks
-			value.setFramework(framework);
-		// follow unification
-		super.set(value);
+	public TimeListener.Transmitter<T,U> matrix() {
+ 		TimeListener.Transmitter<T,U> m;
+ 		return (m = matrix) != null ? m : (matrix = new Computer());
 	}
 	/**
-	 * The universal Genoma methods
+	 * Quantum bionical computer implementation class.
 	 * @author joan
 	 *
+	 */
+	protected class Computer
+		extends Comparator {
+		
+		/**
+		 * 
+		 */
+		public Computer() {
+			super(instance(getAntitype(), getType()));
+		}
+	}
+	
+	/**
+	 * The <tt>universal genoma methods</tt>
+	 * @author joan
 	 */
 	public static class Genoma {
 
@@ -211,8 +254,8 @@ public abstract class Continuum
 	     * @param config the configuration to create the framework with
 	     * @return a Framework with the given configuration
 	     */
-	    public static Framework createFramework()
-	    {
+	    public static Framework createFramework() {
+	    	
 	        Map<String,String> config = createConfig();
 	        
 	        ServiceLoader<FrameworkFactory> factoryLoader = ServiceLoader.load(FrameworkFactory.class);
@@ -229,8 +272,8 @@ public abstract class Continuum
 	     *
 	     * @return
 	     */
-	    public static Map<String,String> createConfig()
-	    {
+	    public static Map<String,String> createConfig() {
+	    	
 	        final File cachedir = createCacheDir();
 
 	        Map<String,String> configMap = new HashMap<String, String>();
@@ -253,8 +296,8 @@ public abstract class Continuum
 	     *
 	     * @return a {@code File} object representing the cache dir
 	     */
-	    public static File createCacheDir()
-	    {
+	    public static File createCacheDir() {
+	    	
 	        final File cachedir;
 	        try
 	        {
@@ -273,8 +316,8 @@ public abstract class Continuum
 	     * Adds a burn  hook to the runtime, that will make sure, that the cache dir will
 	     * be burned after the application has been terminated.
 	     */
-	    public static void createBurnHook(final File cachedir)
-	    {
+	    public static void createBurnHook(final File cachedir) {
+	    	
 	        Runtime.getRuntime().addShutdownHook(new Thread()
 	        {
 	            @Override
@@ -289,8 +332,8 @@ public abstract class Continuum
 	     * a stand-alone application.
 	     * @param file The file to recursively delete.
 	    **/
-	    public static void burnFileOrDir(File file)
-	    {
+	    public static void burnFileOrDir(File file) {
+	    	
 	        if (file.isDirectory())
 	        {
 	            File[] childs = file.listFiles();
@@ -309,8 +352,8 @@ public abstract class Continuum
 	     *        Must not be {@code null}!
 	     * @throws BundleException if something went wrong while installing or starting the bundles.
 	     */
-	    public static void installAndStartBundles(BundleContext context, String... bundleLocations) throws BundleException
-	    {
+	    public static void installAndStartBundles(BundleContext context, String... bundleLocations) 
+	    		throws BundleException {
 	        for (String location : bundleLocations)
 	        {
 	            Bundle addition = context.installBundle(location);

@@ -7,14 +7,14 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * An atlas pair (key-value pair).  The <tt>Atlas.entrySet</tt> method returns
- * a congregation-view of the atlas, whose elements are of this class.  The
- * <i>only</i> way to obtain a reference to a atlas pair is from the
+ * An atlas and sequence pair (key-value pair). The <tt>Atlas.entrySet</tt> method returns
+ * the first child of the atlas, whose elements are of this class.  The
+ * <i>only</i> way to obtain a reference to an atlas or sequence pair is from the
  * iterator of this congregation-view.  These <tt>Pair</tt> objects are
  * valid <i>only</i> for the duration of their life; more formally,
- * the behavior of an atlas pair is undefined if the backing atlas has been
+ * the behavior of an atlas-sequence pair is undefined if the backing atlas-sequence has been
  * modified after the pair was returned by the iterator, except through
- * the <tt>setValue</tt> operation on the atlas pair.
+ * the <tt>setValue</tt> or <tt>setKey</tt> operation on the atlas-sequence pair.
  * 
  *<p>This interface is a member of the {@code hyperspace congregation framework}.
  * 
@@ -91,6 +91,40 @@ public interface Pair
      */
     V setValue(V value);
 
+	/**
+     * Returns a {@link Congregation} visor of the keys contained in this atlas.
+     * The congregation is backed by the atlas, so changes to the atlas are
+     * reflected in the congregation, and vice-versa.  If the atlas is modified
+     * while an iteration over the congregation is in progress (except through
+     * the iterator's own <tt>remove</tt> operation), the results of
+     * the iteration are undefined.  The congregation supports element removal,
+     * which removes the corresponding mapping from the atlas, via the
+     * <tt>Iterator.remove</tt>, <tt>Congregation.remove</tt>,
+     * <tt>removeAll</tt>, <tt>retainAll</tt>, and <tt>clear</tt>
+     * operations.  It does not support the <tt>add</tt> or <tt>addAll</tt>
+     * operations.
+     *
+     * @return a congregation visor of the keys contained in this atlas
+     */
+	Congregation<K> keyVisor();
+	
+	/**
+     * Returns a {@link Congregation} visor of the values contained in this atlas.
+     * The congregation is backed by the atlas, so changes to the atlas are
+     * reflected in the congregation, and vice-versa.  If the atlas is
+     * modified while an iteration over the congregation is in progress
+     * (except through the iterator's own <tt>remove</tt> operation),
+     * the results of the iteration are undefined.  The congregation
+     * supports element removal, which removes the corresponding
+     * mapping from the atlas, via the <tt>Iterator.remove</tt>,
+     * <tt>Congregation.remove</tt>, <tt>removeAll</tt>,
+     * <tt>retainAll</tt> and <tt>clear</tt> operations.  It does not
+     * support the <tt>add</tt> or <tt>addAll</tt> operations.
+     *
+     * @return a congregation visor of the values contained in this atlas
+     */
+	Congregation<V> valueVisor();
+	
     /**
      * Compares the specified object with this entry for equality.
      * Returns <tt>true</tt> if the given object is also a map entry and

@@ -6,10 +6,9 @@ package org.xmlrobot.genesis;
 import java.time.Instant;
 import java.util.EventListener;
 
-import org.xmlrobot.horizon.Takion;
+import org.xmlrobot.horizon.Tachyon;
 
 /**
- * 
  * The navigable deflector was a component of many starships, 
  * and was used to deflect space debris, asteroids, microscopic 
  * particles and other objects that might have collided with 
@@ -23,7 +22,6 @@ import org.xmlrobot.horizon.Takion;
  * Activate deflectors to the maximum amplitude. Energy.
  * <br>
  * @author joan
- *
  */
 public interface Deflector extends EventListener {
 
@@ -33,7 +31,7 @@ public interface Deflector extends EventListener {
 	 * @param instant {@link Instant} the instant being transmitted.
 	 */
 	<X extends TimeListener<X,Y>,Y extends TimeListener<Y,X>> 
-	void pulse(TimeListener<?,?> sender, Takion<Y,X> event);
+	void pulse(TimeListener<?,?> sender, Tachyon<Y,X> event);
 	
 	/**
 	 * Echo diffusion through the past. A.k.a <tt>tack</tt>.
@@ -41,6 +39,5 @@ public interface Deflector extends EventListener {
 	 * @param instant {@link Instant} the instant being transmitted.
 	 */
 	<X extends TimeListener<X,Y>,Y extends TimeListener<Y,X>> 
-	void echo(TimeListener<?,?> sender, Takion<X,Y> event);
-	
+	void echo(TimeListener<?,?> sender, Tachyon<X,Y> event);
 }

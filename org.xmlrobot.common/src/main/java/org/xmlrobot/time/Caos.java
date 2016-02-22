@@ -67,20 +67,12 @@ public abstract class Caos
 	 */
 	@Override
 	public synchronized K permute(int N) {
-		// declare future
-		K future;
-		// get 0..N-1 random index
-		int randomIndex = nextInt(N);		
-		// call random infer child; itself if index equals 0
-		K child = call(randomIndex);
+		// call 0..N-1 random index infer child; itself if index equals 0
+		K child = call(nextInt(N));
 		// give current instance's natural order to the infer child
 		swap(child);
-		
-//		for(K string : child.getFuture()) {
-//
-//			System.out.print(string.getName());
-//		}
-//		System.out.print("\n");
+		// declare future
+		K future;
 		// have we arrived to the future ? 
 		return N <= 1 ?
 				// so return to the past

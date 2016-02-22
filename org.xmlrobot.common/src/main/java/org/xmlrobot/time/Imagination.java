@@ -89,7 +89,6 @@ public abstract class Imagination
 		// nullify listener's inheritance
 		listener.setParent(null);
 		listener.setChild(null);
-		
 		// declare child
 		K child;
 		// verify child's existence
@@ -221,5 +220,4 @@ public abstract class Imagination
 		}
 		return true;
 	}
-
 }

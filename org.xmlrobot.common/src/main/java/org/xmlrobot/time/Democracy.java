@@ -71,72 +71,50 @@ public abstract class Democracy
 	 * @see org.xmlrobot.genesis.TimeListener#delve(int)
 	 */
 	public synchronized int delve(int counter) {
-		
-		// declare child
-		K child;
-		if((child = getChild()) == null) {
-			
-			return ++counter;
-		}
-		else {
-			
-			return child.delve(++counter);
-		}
+		return isEmpty() ? ++counter : getChild().delve(++counter);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.TimeListener#getDepth()
 	 */
 	@Override
 	public synchronized int depth() {
-
-		return getChild() != null ? getChild().delve(0) : 0;
+		return !isEmpty() ? getChild().delve(0) : 0;
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Congregation#size()
 	 */
 	@Override
 	public int size() {
-
 		return depth();
 	}
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.Congregation#collect(org.xmlrobot.genesis.Congregation)
+	 */
 	@Override
 	public synchronized Congregation<K> collect(Congregation<K> entities) {
-		
+		// add current instance to allocated congregation
 		entities.add(getType().cast(this));
-		
-		if(getChild() != null) {
-			
+		// check if we are the future
+		if(!isEmpty()) {
+			// call concurrently
 			return getChild().collect(entities);
 		}
 		else {
-			
+			// turn back result
 			return entities;
 		}
 	}
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.TimeListener#call(int)
+	 * @see org.xmlrobot.genesis.Congregation#call(int)
 	 */
 	public synchronized K call(int N) {
-		
-		K child;
-		
-		if(N <= 0) {
-			// you
-			return call();
-		}
-		else if((child = getChild()) != null) {
-			// follow natural call
-			return child.call(--N);
-		}
-		else {	
-			return null;
-		}
+		return N <= 0 ? call() : !isEmpty() ? getChild().call(--N) : null;
 	}
     /**
      * {@inheritDoc}
-     * <p>This implementation iterates over the specified collection,
+     * <p>This implementation iterates over the specified congregation,
      * checking each element returned by the iterator in turn to see
-     * if it's contained in this collection.  If all elements are so
+     * if it's contained in this congregation.  If all elements are so
      * contained <tt>true</tt> is returned, otherwise <tt>false</tt>.
      *
      * @throws ClassCastException            {@inheritDoc}
@@ -205,60 +183,5 @@ public abstract class Democracy
         }
         return modified;
     }
-    /* (non-Javadoc)
-     * @see org.xmlrobot.time.Logic#swap(org.xmlrobot.genesis.TimeListener)
-     */
-    @Override
-	public synchronized void swap(K listener) {
-		// check paranoia and existence
-		if(listener == this || listener == null)
-			return;
-		// get listener's parent and child
-		K parent = listener.getParent();
-		K child = listener.getChild();
-		// call hyper-swap
-		super.swap(listener);
-		// check listener inheritance
-		if (child != null) {
-			// check it is not my paranoia
-			if (child != this) {
-				// set child as listener's child
-				setChild(child);
-				// set child listener's parent as current instance
-				child.setParent(call());
-				// check existence
-				if (parent != null) {
-					// check is paranoia
-					if (parent != this) {
-						// set parent as listener's parent
-						setParent(parent);
-						// set parent listener's child as current instance
-						parent.setChild(call());
-					} else {
-						// it isn't paranoia
-						setParent(listener);
-					}
-				} else {
-					// nullify parent inheritance
-					setParent(null);
-				}
-			} else {
-				// listener is my child
-				setChild(listener);
-				// I am the parent of it
-				listener.setParent(call());
-			}
-		} else if (parent != null) {
-			// nullify child inheritance
-			setChild(null);
-			// set parent as listener's parent
-			setParent(parent);
-			// set parent listener's child as current instance
-			parent.setChild(call());
-		} else {
-			// nullify inheritance
-			setChild(null);
-			setParent(null);
-		}
-	}
+
 }

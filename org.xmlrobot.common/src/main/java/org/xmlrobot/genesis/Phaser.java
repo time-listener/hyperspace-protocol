@@ -28,6 +28,23 @@ public interface Phaser<V>
 	extends MassListener, 
 		RunnableFuture<V>, 
 			Reproducible<V> {
+
+	/**
+	 * The stem.
+	 */
+	public static final String STEM = "phaser.stem";
+
+	/**
+	 * Returns the stem of inheritance.
+	 * @return the stem of inheritance
+	 */
+	V getStem();
+
+	/**
+	 * Sets the stem of inheritance.
+	 * @param root the stem of inheritance
+	 */
+	void setStem(V stem);
 	
 	/**
 	 * {@inheritDoc}
@@ -54,24 +71,24 @@ public interface Phaser<V>
 	V get(long timeout, java.util.concurrent.TimeUnit unit);
 	
 	/**
-     * Replaces the value corresponding to this hypergenesis with the specified
-     * value (optional operation). (Writes through to the hypergenesis.) The
+     * Replaces the value corresponding to this phaser with the specified
+     * value (optional operation). (Writes through to the phaser.) The
      * behavior of this call is undefined if the mapping has already been
-     * removed from the hypergenesis (by the iterator's <tt>remove</tt> operation).
+     * removed from the phaser (by the iterator's <tt>remove</tt> operation).
      *
-     * @param value new value to be stored in this hypergenesis
-     * @return old antimatter corresponding to the hypergenesis
+     * @param value new value to be stored in this phaser
+     * @return old antimatter corresponding to the phaser
      * @throws UnsupportedOperationException if the <tt>put</tt> operation
-     *         is not supported by the backing hypergenesis
+     *         is not supported by the backing phaser
      * @throws ClassCastException if the class of the specified antimatter
-     *         prevents it from being stored in the backing hypergenesis
-     * @throws NullPointerException if the backing hypergenesis does not permit
+     *         prevents it from being stored in the backing phaser
+     * @throws NullPointerException if the backing phaser does not permit
      *         null antimatter, and the specified antimatter is null
      * @throws IllegalArgumentException if some property of this antimatter
-     *         prevents it from being stored in the backing hypergenesis
+     *         prevents it from being stored in the backing phaser
      * @throws IllegalStateException implementations may, but are not
-     *         required to, throw this exception if the hypergenesis has been
-     *         removed from the backing hypergenesis.
+     *         required to, throw this exception if the phaser has been
+     *         removed from the backing phaser.
      */
 	void set(V value);
 

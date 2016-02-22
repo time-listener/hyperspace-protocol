@@ -20,10 +20,11 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.xmlrobot.genesis.TimeListener;
 import org.xmlrobot.genesis.Phaser;
+import org.xmlrobot.util.Command;
 import org.xmlrobot.util.Parity;
 
 /**
- * {@link TimeListener} of the future.
+ * Synchrony of the future.
  * <br><br>
  * @author joan
  * 
@@ -49,7 +50,7 @@ public abstract class Concurrence
 	@Override
 	@XmlTransient
 	public ThreadGroup getFamily() {
-		return dna().getFamily();
+		return message.getFamily();
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Message#getRunner()
@@ -57,8 +58,7 @@ public abstract class Concurrence
 	@Override
 	@XmlTransient
 	public Thread getRunner() {
-
-		return dna().getRunner();
+		return message.getRunner();
 	}
   	/**
      * {@link Concurrence} default class constructor.
@@ -93,13 +93,62 @@ public abstract class Concurrence
 			Parity gen) {
 		super(type, antitype, gen);
 	}
+	/* (non-Javadoc)
+	 * @see java.util.concurrent.ExecutorService#isShutdown()
+	 */
+	@Override
+	public boolean isShutdown() {
+		return getCommand() == Command.TRANSFER;
+	}
+	/* (non-Javadoc)
+	 * @see java.util.concurrent.ExecutorService#isTerminated()
+	 */
+	@Override
+	public boolean isTerminated() {
+		return getCommand() == Command.TRANSFER;
+	}
+	/* (non-Javadoc)
+	 * @see java.util.concurrent.Future#isCancelled()
+	 */
+	@Override
+	public boolean isCancelled() {
+		switch (getCommand()) {
+		case INTERRUPTED:
+			return true;
+		default:
+			return false;
+		}
+	}
+	/* (non-Javadoc)
+	 * @see java.util.concurrent.Future#isDone()
+	 */
+	@Override
+	public boolean isDone() {
+		return getCommand() == Command.TRANSFER;
+	}
+
+	
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.Hypergenesis#run()
+	 */
+	@Override
+	public void run() {
+		// call ancestral method
+		super.run();
+		// declare future
+		V future;
+		// assign and check
+		if((future = get()) != null) {
+			// register opposite instance
+			future.start(getContext());
+		}
+	}
 	
 	/* (non-Javadoc)
 	 * @see java.util.concurrent.ThreadFactory#newThread(java.lang.Runnable)
 	 */
 	@Override
 	public Thread newThread(Runnable entity) {
-		
 		Thread life = new Thread(getFamily(), entity, getType().getName() + "." + getName(), 0);
 		
         if (life.isDaemon())
@@ -124,8 +173,27 @@ public abstract class Concurrence
 	 */
 	@Override
 	public synchronized void execute(Runnable entity) {
-
 		newThread(entity).start();
+	}
+	/* (non-Javadoc)
+	 * @see java.util.concurrent.Future#cancel(boolean)
+	 */
+	@Override
+	public boolean cancel(boolean mayInterruptIfRunning) {
+		if(mayInterruptIfRunning) {
+			push(Command.INTERRUPTED);
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
+	/* (non-Javadoc)
+	 * @see java.util.concurrent.ExecutorService#shutdown()
+	 */
+	@Override
+	public void shutdown() {
+		push(Command.TRANSFER);
 	}
 	/**
      * the main mechanics of invokeAny.
@@ -139,8 +207,7 @@ public abstract class Concurrence
         if (ntasks == 0)
             throw new IllegalArgumentException();
         ArrayList<Future<T>> futures = new ArrayList<Future<T>>(ntasks);
-        ExecutorCompletionService<T> ecs =
-            new ExecutorCompletionService<T>(this);
+        ExecutorCompletionService<T> ecs = new ExecutorCompletionService<T>(this);
 
         // For efficiency, especially in executors with limited
         // parallelism, check to see if previously submitted tasks are

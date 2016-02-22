@@ -158,14 +158,11 @@ public abstract class Logic
      * @see org.xmlrobot.genesis.TimeListener#contains(java.lang.Object)
      */
     public synchronized boolean contains(K o) {
-
-    	K child;
-    	
     	if(o == this) {
     		return true;
     	}
-    	else if((child = getChild()) != null) {
-    		return child.contains(o);
+    	else if(!isEmpty()) {
+    		return getChild().contains(o);
     	}
     	else {
     		return false;

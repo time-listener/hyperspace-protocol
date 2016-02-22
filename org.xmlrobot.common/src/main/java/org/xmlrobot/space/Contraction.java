@@ -6,6 +6,7 @@ package org.xmlrobot.space;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.xmlrobot.genesis.Mass;
+import org.xmlrobot.util.Command;
 import org.xmlrobot.util.Parity;
 
 /**
@@ -30,16 +31,7 @@ public abstract class Contraction<K,V>
 	 * {@link Contraction} default class constructor.
 	 */
 	public Contraction() {
-	
 		super();
-	}
-	/**
-     * {@link Contraction} class constructor.
-	 * @param type the inherited type
-     * @param parent the parent of inheritance
-	 */
-    protected Contraction(Class<? extends Mass<K,V>> type, Mass<K,V> parent) {
-		super(type, parent);
 	}
 	/**
 	 * {@link Contraction} default class constructor.
@@ -68,58 +60,6 @@ public abstract class Contraction<K,V>
 	 */
 	protected Contraction(Class<? extends Mass<K,V>> type, K key, V value, Parity gen) {
 		super(type, key, value, gen);
-	}
-	/**
-	 * {@link Contraction} class constructor.
-	 * @param type the type
-	 * @param stem {@link Mass} the stem
-	 * @param parent {@link Mass} the parent
-	 */
-	protected Contraction(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
-			Mass<K,V> parent) {
-		super(type, stem, parent);
-	}
-	/**
-	 * {@link Contraction} class constructor.
-	 * @param type the type
-	 * @param stem {@link Mass} the stem
-	 * @param gen {@link Parity} the gender
-	 */
-	protected Contraction(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
-			Parity gen) {
-		super(type, stem, gen);
-	}
-	/**
-	 * {@link Contraction} class constructor.
-	 * @param type the type
-	 * @param stem {@link Mass} the stem
-	 * @param parity {@link Parity} the gender
-	 */
-	protected Contraction(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
-			K key, V value, Mass<K,V> parent) {
-		super(type, stem, key, value, parent);
-	}
-	/**
-	 * {@link Contraction} class constructor.
-	 * @param type the inherited type
-	 * @param stem {@link Mass} the stem
-	 * @param key the key
-	 * @param value the value
-	 * @param gen {@link Parity} the gender
-	 */
-	protected Contraction(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
-			K key, V value, Parity gen) {
-		super(type, stem, key, value, gen);
-	}
-	/**
-	 * {@link Contraction} class constructor.
-	 * @param type the inherited type
-	 * @param antitype the inherited antitype
-	 * @param parent the parent of inheritance
-	 */
-	protected Contraction(Class<? extends Mass<K,V>> type, 
-			Class<? extends Mass<V,K>> antitype, Mass<K,V> parent) {
-		super(type, antitype, parent);
 	}
 	/**
 	 * {@link Contraction} class constructor.
@@ -163,19 +103,19 @@ public abstract class Contraction<K,V>
 	@Override
 	public V putValue(K key, V value) {
 
-		Mass<K,V> child;
-		
 		if(key.equals(getKey())) {
 			// update value and return old value
 			return message.getAndSet(Mass.VALUE, value);
 		}
-		else if((child = getChild()) != null) {
+		else if(!isEmpty()) {
 			// call recursion
-			return child.putValue(key, value);
+			return getChild().putValue(key, value);
 		}
 		else {
-			// key is not in the chain
-			return null;
+			// key is not in the chain: create it
+			instance(getType(), getAntitype(), 
+					key, value, getRoot()).push(Command.SEND);
+    		return null;
 		}
 	}
 	/* (non-Javadoc)
@@ -184,28 +124,49 @@ public abstract class Contraction<K,V>
 	@Override
 	public K putKey(V value, K key) {
 
-		return get().putValue(value, key);
+		if(value.equals(getValue())) {
+			// update value and return old value
+			return message.getAndSet(Mass.KEY, key);
+		}
+		else if(!isEmpty()) {
+			// call recursion
+			return getChild().putKey(value, key);
+		}
+		else {
+			// key is not in the chain: create it
+			instance(getType(), getAntitype(), 
+					key, value, getRoot()).push(Command.SEND);
+    		return null;
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.TimeListener#putIfAbsent(java.lang.Object, java.lang.Object)
 	 */
 	public V putValueIfAbsent(K key, V value) {
-		
+		// retrieve value
         V v = getValue(key);
-        
+        // check existence
         if (v == null) {
+        	// update
             v = putValue(key, value);
         }
-
+        // turn back
         return v;
     }
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.TimeListener#putIfAbsent(java.lang.Object, java.lang.Object)
 	 */
 	public K putKeyIfAbsent(V value, K key) {
-		
-		return get().putValueIfAbsent(value, key);
+		// retrieve key
+        K k = getKey(value);
+        // check existence
+        if (k == null) {
+        	// update
+            k = putKey(value, key);
+        }
+        // turn back
+        return k;
     }
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.TimeListener#putAll(org.xmlrobot.genesis.TimeListener)
@@ -217,8 +178,8 @@ public abstract class Contraction<K,V>
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.TimeListener#putAllPositive(org.xmlrobot.genesis.TimeListener)
 	 */
-	public void putAllKeys(Mass<? extends V,? extends K> m) {
-		
-		get().putAllValues(m);
+	public void putAllKeys(Mass<? extends V,? extends K> m) {		
+		for (Mass<? extends V,? extends K> e : m)
+            putKey(e.getKey(), e.getValue());
 	}
 }

@@ -3,7 +3,7 @@
  */
 package org.xmlrobot.time;
 
-import java.util.Iterator;
+
 
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -112,7 +112,7 @@ import org.xmlrobot.util.Parity;
  *		if it ever does. <b>root</b> to be <b>root</b><br/>
  *		must push the heart and transform it.<br/>
  *		<br/>
- *		It must express itself in every smallest act of Its votary.<br/>
+ *		It must express itself in every smallest act of Its logic.<br/>
  *		<b>this</b> can only be done through a definite realization,<br/>
  *		more <b>virtual</b> than the five senses can ever <b>reproduce</b>.<br/>
  *		<br/>
@@ -282,20 +282,7 @@ public abstract class Inheritance
 		child.setParent(null);
 		return child;
 	}
-	/* (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
-	 */
-	@Override
-	public Iterator<K> iterator() {
 
-		switch (getGen()) 
-		{
-		case XY:
-			return new PastIterator<K>(call());
-		default:
-			return new FutureIterator<K>(call());
-		}
-	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.hyperspace.Hyperspace#run()
 	 */
@@ -303,22 +290,19 @@ public abstract class Inheritance
 	public void run() {
 		// call ancestral method from the past
 		super.run();
-		// declare child of inheritance
-		K child;
 		// assign and check
-		if ((child = getChild()) != null) {
+		if (!isEmpty()) {
 			// make parent listen time
-			child.start(getContext());
+			getChild().start(getContext());
 		}
 	}
-
 
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.time.Imagination#order(org.xmlrobot.genesis.TimeListener)
 	 */
 	@Override
 	public synchronized boolean order(K listener) {
-		// call ancestral submit
+		// call ancestral order
 		if (super.order(listener)) {
 			// submit opposite child
 			listener.get().push(Command.ORDER);
@@ -339,6 +323,14 @@ public abstract class Inheritance
 		return listener;
 	}
 	/* (non-Javadoc)
+	 * @see org.xmlrobot.time.Freedom#remove()
+	 */
+	@Override
+	public synchronized void remove() {
+		super.remove();
+		get().push(Command.RELEASE);
+	}
+	/* (non-Javadoc)
 	 * @see org.xmlrobot.time.Metaphysical#submit(org.xmlrobot.genesis.TimeListener)
 	 */
 	@Override
@@ -351,4 +343,5 @@ public abstract class Inheritance
 		}
 		else return false;
 	}
+	
 }

@@ -24,12 +24,14 @@ import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceRegistration;
 import org.xmlrobot.genesis.MassListener;
 import org.xmlrobot.genesis.TimeListener;
-import org.xmlrobot.horizon.Takion;
+import org.xmlrobot.horizon.Tachyon;
+import org.xmlrobot.util.Abort;
 import org.xmlrobot.util.Command;
 import org.xmlrobot.util.Parity;
 
 /**
- * Entity's brain.
+ * Entity's brain. 
+ * It is the obsolete dictionary of always that is always changing.
  * 
  * @author joan
  *
@@ -159,6 +161,11 @@ public class Hyperhead
 		// inherit dna
 		set(TimeListener.DNA, this);
 	}
+	public Hyperhead(MassListener head) {
+		if(head == null ? true : !(head instanceof Hyperhead))
+			throw new Abort();
+		this.map = (Hyperhead) head;
+	}
 	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#clone()
@@ -186,21 +193,18 @@ public class Hyperhead
 	 * @param key the key reference
 	 * @return not null if key was previously declared.
 	 */
-	public <X> AtomicReference<X> declare(String key){
-		AtomicReference<X> ref = new AtomicReference<X>();
-		put(key, ref);
-		return ref;
+	public <X> Object declare(String key){
+		return put(key, new AtomicReference<X>());
 	}
 	/**
 	 * Declares and sets a reference in the hyperdictionary.
 	 * @param key the key reference
 	 * @param value the value reference
 	 * @return the declared reference
+	 * @return not null if key was previously declared.
 	 */
-	public <X> AtomicReference<X> declareAndSet(String key, X value){
-		AtomicReference<X> ref = new AtomicReference<X>(value);
-		put(key, ref);
-		return ref;
+	public <X> Object declareAndSet(String key, X value){
+		return put(key, new AtomicReference<X>(value));
 	}
 	/* (non-Javadoc)
 	 * @see java.util.Dictionary#get(java.lang.Object)
@@ -215,7 +219,7 @@ public class Hyperhead
 	 * @return the hyperdictionary reference with the specified key
 	 */
 	@SuppressWarnings("unchecked")
-	public <X> AtomicReference<X> getReference(String key) {
+	public <X> AtomicReference<X> getAndCast(String key) {
 		try {
 			return (AtomicReference<X>) get(key);
 		}
@@ -230,7 +234,7 @@ public class Hyperhead
 	 */
 	public <X> X getAndGet(String key) {
 		try {
-			return this.<X>getReference(key).get();	
+			return this.<X>getAndCast(key).get();	
 		}
 		catch(ClassCastException | NullPointerException unused) {
 			return null;
@@ -243,7 +247,7 @@ public class Hyperhead
 	 */
 	public <X> X getAndSet(String key, X value) {
 		try {
-			return this.<X>getReference(key).getAndSet(value);
+			return this.<X>getAndCast(key).getAndSet(value);
 		}
 		catch(ClassCastException | NullPointerException unused) {
 			return null;
@@ -258,7 +262,7 @@ public class Hyperhead
 	 */
 	public <X> boolean compareAndSet(String key, X oldValue, X newValue) {
 		try {
-			return getReference(key).compareAndSet(oldValue, newValue);
+			return getAndCast(key).compareAndSet(oldValue, newValue);
 		}
 		catch(ClassCastException | NullPointerException unused) {
 			
@@ -287,13 +291,13 @@ public class Hyperhead
 	 */
 	public <X> void set(String key, X value) {
 		// get reference
-		AtomicReference<X> ref = getReference(key);
+		AtomicReference<X> ref = getAndCast(key);
 		// check existence
 		if(ref != null)
 			// set new value
 			ref.set(value);
 		// create it
-		else put(key, new AtomicReference<X>(value));
+		else declareAndSet(key, value);
 	}
 	/* (non-Javadoc)
 	 * @see java.util.Dictionary#remove(java.lang.Object)
@@ -338,7 +342,7 @@ public class Hyperhead
 	 * @see org.xmlrobot.genesis.MassListener#mass(org.xmlrobot.genesis.Mass, org.xmlrobot.horizon.Graviton)
 	 */
 	@Override
-	public void mass(MassListener sender, Takion<?,?> event) {
+	public void mass(MassListener sender, Tachyon<?,?> event) {
 		return;
 	}
 	/* (non-Javadoc)
@@ -435,7 +439,20 @@ public class Hyperhead
 	public <T> T invokeAny(Collection<? extends Callable<T>> tasks,
 			long timeout, TimeUnit unit) throws InterruptedException,
 			ExecutionException, TimeoutException {
-
 		return null;
+	}
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.Deflector#pulse(org.xmlrobot.genesis.TimeListener, org.xmlrobot.horizon.Tachyon)
+	 */
+	@Override
+	public <X extends TimeListener<X,Y>, Y extends TimeListener<Y,X>>
+		void pulse(TimeListener<?,?> sender, Tachyon<Y,X> event) {
+	}
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.Deflector#echo(org.xmlrobot.genesis.TimeListener, org.xmlrobot.horizon.Tachyon)
+	 */
+	@Override
+	public <X extends TimeListener<X,Y>,Y extends TimeListener<Y,X>> void echo(
+			TimeListener<?,?> sender, Tachyon<X,Y> event) {
 	}
 }

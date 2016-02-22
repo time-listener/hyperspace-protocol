@@ -36,14 +36,6 @@ public abstract class Dilatation<K,V>
 		super();
 	}
 	/**
-     * {@link Dilatation} class constructor.
-	 * @param type the inherited type
-     * @param parent the parent of inheritance
-	 */
-    protected Dilatation(Class<? extends Mass<K,V>> type, Mass<K,V> parent) {
-		super(type, parent);
-	}
-	/**
 	 * {@link Dilatation} default class constructor.
 	 * @param type the type
 	 * @param gen {@link Parity} the gender
@@ -70,26 +62,6 @@ public abstract class Dilatation<K,V>
 	/**
 	 * {@link Dilatation} class constructor.
 	 * @param type the type
-	 * @param stem {@link Mass} the stem
-	 * @param parent {@link Mass} the parent
-	 */
-	protected Dilatation(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
-			Mass<K,V> parent) {
-		super(type, stem, parent);
-	}
-	/**
-	 * {@link Dilatation} class constructor.
-	 * @param type the type
-	 * @param stem {@link Mass} the stem
-	 * @param gen {@link Parity} the gender
-	 */
-	protected Dilatation(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
-			Parity gen) {
-		super(type, stem, gen);
-	}
-	/**
-	 * {@link Dilatation} class constructor.
-	 * @param type the type
 	 * @param stem the value
 	 * @param parity {@link Parity} the gender
 	 */
@@ -106,16 +78,6 @@ public abstract class Dilatation<K,V>
 	protected Dilatation(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
 			K key, V value, Parity gen) {
 		super(type, stem, key, value, gen);
-	}
-	/**
-	 * {@link Dilatation} class constructor.
-	 * @param type the type
-	 * @param antitype the value
-	 * @param parent the parent of inheritance
-	 */
-	protected Dilatation(Class<? extends Mass<K,V>> type, Class<? extends Mass<V,K>> antitype, 
-			Mass<K,V> parent) {
-		super(type, antitype, parent);
 	}
 	/**
 	 * {@link Dilatation} class constructor.
@@ -161,7 +123,8 @@ public abstract class Dilatation<K,V>
                    remappingFunction.apply(oldValue, value);
         if(newValue == null) {
             remove(key);
-        } else {
+        } 
+        else {
             putValue(key, newValue);
         }
         return newValue;
@@ -171,23 +134,30 @@ public abstract class Dilatation<K,V>
      */
     public K mergeInverted(V value, K key,
             BiFunction<? super K,? super K,? extends K> remappingFunction) {
-    
-    	return get().merge(value, key, remappingFunction);
+        Objects.requireNonNull(remappingFunction);
+        Objects.requireNonNull(value);
+        K oldKey = getKey(value);
+        K newKey = (oldKey == null) ? key :
+                   remappingFunction.apply(oldKey, key);
+        if(newKey == null) {
+            remove(value);
+        } 
+        else {
+            putKey(value, newKey);
+        }
+        return newKey;
     }
     /* (non-Javadoc)
      * @see org.xmlrobot.genesis.TimeListener#removeNegative(java.lang.Object)
      */
     public Mass<K,V> removeByKey(K key) {
-    
-    	Mass<K,V> child = getChild();
-    	
+
     	if(key.equals(getKey())) {
     		remove();
     		return call(); //a.k.a getType().cast(this)
     	}
-    	else if(child != null) {
-    		
-    		return child.removeByKey(key);
+    	else if(!isEmpty()) {
+    		return getChild().removeByKey(key);
     	}
     	else {
 
@@ -198,15 +168,22 @@ public abstract class Dilatation<K,V>
      * @see org.xmlrobot.genesis.TimeListener#removePositive(java.lang.Object)
      */
     public Mass<V,K> removeByValue(V value) {
-    	
-    	return get().removeByKey(value);
+
+    	if(value.equals(getValue())) {
+    		remove();
+    		return get(); //a.k.a getType().cast(this)
+    	}
+    	else if(!isEmpty()) {
+    		return getChild().removeByValue(value);
+    	}
+    	else {
+        	return null;
+    	}
     }
     /* (non-Javadoc)
      * @see org.xmlrobot.genesis.TimeListener#removeNegative(java.lang.Object, java.lang.Object)
      */
     public boolean removeByKey(K key, V value) {
-    	
-    	Mass<K,V> child = getChild();
     	
     	if(key.equals(getKey())) {
     		if(value.equals(getValue())) {
@@ -217,8 +194,8 @@ public abstract class Dilatation<K,V>
     			return false;
     		}
     	}
-    	else if(child != null) {
-    		return child.removeByKey(key, value);
+    	else if(!isEmpty()) {
+    		return getChild().removeByKey(key, value);
     	}
     	else {
         	return false;
@@ -229,6 +206,20 @@ public abstract class Dilatation<K,V>
      */
     public boolean removeByValue(V value, K key) {
     	
-    	return get().removeByKey(value, key);
+    	if(value.equals(getValue())) {
+    		if(key.equals(getKey())) {
+    			remove();
+    			return true;
+    		}
+    		else {
+    			return false;
+    		}
+    	}
+    	else if(!isEmpty()) {
+    		return getChild().removeByValue(value, key);
+    	}
+    	else {
+        	return false;
+    	}
     }
 }

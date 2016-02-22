@@ -6,7 +6,6 @@ package org.xmlrobot.time;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.xmlrobot.genesis.TimeListener;
-import org.xmlrobot.util.Command;
 import org.xmlrobot.util.Parity;
 
 /**
@@ -64,65 +63,6 @@ public abstract class Further
 		super(type, antitype, gen);
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.concurrent.ExecutorService#isShutdown()
-	 */
-	@Override
-	public boolean isShutdown() {
-
-		return getCommand() == Command.TRANSFER;
-	}
-	/* (non-Javadoc)
-	 * @see java.util.concurrent.ExecutorService#isTerminated()
-	 */
-	@Override
-	public boolean isTerminated() {
-		
-		return getCommand() == Command.TRANSFER;
-	}
-	/* (non-Javadoc)
-	 * @see java.util.concurrent.Future#cancel(boolean)
-	 */
-	@Override
-	public boolean cancel(boolean mayInterruptIfRunning) {
-		
-		if(mayInterruptIfRunning) {
-			push(Command.INTERRUPTED);
-			return true;
-		}
-		else{
-			return false;
-		}
-	}
-	/* (non-Javadoc)
-	 * @see java.util.concurrent.Future#isCancelled()
-	 */
-	@Override
-	public boolean isCancelled() {
-
-		switch (getCommand()) {
-		case INTERRUPTED:
-			return true;
-		default:
-			return false;
-		}
-	}
-	/* (non-Javadoc)
-	 * @see java.util.concurrent.Future#isDone()
-	 */
-	@Override
-	public boolean isDone() {
-		
-		return getCommand() == Command.TRANSFER;
-	}
-	
-	/* (non-Javadoc)
-	 * @see java.util.concurrent.ExecutorService#shutdown()
-	 */
-	@Override
-	public void shutdown() {
-		push(Command.TRANSFER);
-	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.TimeListener#releaseFuture()
 	 */

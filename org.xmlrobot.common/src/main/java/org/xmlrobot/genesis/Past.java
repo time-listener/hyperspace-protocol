@@ -14,8 +14,7 @@ import java.util.concurrent.Future;
  * @author joan
  *
  */
-public interface Past
-	extends MassListener {
+public interface Past {
 	
 	Object clone();
 	

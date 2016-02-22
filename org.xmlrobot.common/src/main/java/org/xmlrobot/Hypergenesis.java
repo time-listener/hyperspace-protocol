@@ -5,13 +5,14 @@ package org.xmlrobot;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.osgi.framework.BundleContext;
 import org.xmlrobot.genesis.TimeListener;
-import org.xmlrobot.horizon.Takion;
+import org.xmlrobot.horizon.Tachyon;
 import org.xmlrobot.protocol.Hyperbody;
 import org.xmlrobot.util.Abort;
 import org.xmlrobot.util.Command;
@@ -98,6 +99,7 @@ public abstract class Hypergenesis
 	}
 	/**
 	 * {@link Hypergenesis} class constructor.
+	 * @param type the type
      * @param gen {@link Parity} the inherited gender
 	 */
 	protected Hypergenesis(Class<? extends K> type, Parity gen) {
@@ -107,6 +109,8 @@ public abstract class Hypergenesis
 	}
 	/**
 	 * {@link Hypergenesis} class constructor.
+	 * @param type the type
+	 * @param value the value
      * @param gen {@link Parity} the inherited gender
 	 */
 	protected Hypergenesis(Class<? extends K> type, V value, Parity gen) {
@@ -124,15 +128,8 @@ public abstract class Hypergenesis
 		try {
 			@SuppressWarnings("unchecked")
 			Hypergenesis<K,V> key = (Hypergenesis<K,V>) super.clone();
-			
-			Class<? extends K> type;
-			
-			if((type = getType()) != null) {
-				
-				key.message = new Hyperbody<K,V>(type, type.cast(key), getGen());
-				return key;
-			}
-			else return null;
+			key.message = new Hyperbody<K,V>(getType(), getType().cast(key), getGen());
+			return key;
 		}
 		catch (ClassCastException | CloneNotSupportedException e) {
 
@@ -144,7 +141,7 @@ public abstract class Hypergenesis
 	 */
 	@Override
 	public <X extends TimeListener<X,Y>, Y extends TimeListener<Y,X>> 
-	void pulse(TimeListener<?,?> sender, Takion<Y,X> event) {
+	void pulse(TimeListener<?,?> sender, Tachyon<Y,X> event) {
 		// wonderland nullification
 		matrix = null;
 	}
@@ -153,7 +150,7 @@ public abstract class Hypergenesis
 	 */
 	@Override
 	public <X extends TimeListener<X,Y>,Y extends TimeListener<Y,X>> 
-		void echo(TimeListener<?,?> sender, Takion<X,Y> event) {
+		void echo(TimeListener<?,?> sender, Tachyon<X,Y> event) {
 		// declare child
 		X child;
 		// check event compatibility
@@ -171,7 +168,7 @@ public abstract class Hypergenesis
 				V o;
 				if((o = output()) != null){
 					// inject results
-					event.matrix().push(child.getType().cast(o));
+					event.matrix().inject(child.getType().cast(o));
 				}
 			}
 		}
@@ -183,7 +180,7 @@ public abstract class Hypergenesis
 	public void run() {
 		message.run();
 		// start listening time
-		push(Command.LISTEN);
+		push(Command.PUSH);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.MassListener#start(org.osgi.framework.BundleContext)
@@ -212,15 +209,11 @@ public abstract class Hypergenesis
 	@Override
 	public abstract TimeListener.Transmitter<K,V> matrix();
 	
-
-	
 	/**
 	 * Abstract hypergenesis comparator implementation class.
 	 * <p> We want to make a Big Bang. So, we need an information transmitter
 	 * to create the future mass that will compare the received masses.
-	 * 
 	 * <p>Basically, this abstract implementation, as its name suggests, just makes a comparison.
-	 * 
 	 * @author joan
 	 *
 	 * @param <K> is the key
@@ -233,12 +226,28 @@ public abstract class Hypergenesis
 		 * A digital frontier.
 		 */
 		transient volatile V output;
+
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.Output#get()
+		 */
+		@Override
+		public V get() {
+			// retrieve output
+			return output;
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.Output#set(java.lang.Object)
+		 */
+		@Override
+		public void set(V value) {
+			output = value;
+		}
 		
 		/**
 		 * {@link Comparator} default class constructor
 		 */
-		public Comparator() {
-		}
+		public Comparator() { }
+		
 		/**
 		 * {@link Comparator} default class constructor
 		 */
@@ -256,31 +265,54 @@ public abstract class Hypergenesis
 			return key.compareTo(value);
 		}
 		/* (non-Javadoc)
-		 * @see org.xmlrobot.genesis.Message.Transmitter#output()
+		 * @see org.xmlrobot.genesis.TimeListener.Transmitter#push(java.lang.Object)
 		 */
 		@Override
-		public V get() {
-			// retrieve output
+		public void inject(K key) {
+
+			output.add(key.get());
+			output.get().add(key);
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.TimeListener.Transmitter#inject(java.lang.Object)
+		 */
+		@Override
+		public void push(V value) {
+
+			output.add(value);
+			output.get().add(value.get());
+		}		
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.Output#cancel(boolean)
+		 */
+		@Override
+		public boolean cancel(boolean mayInterruptIfRunning) {
+
+			return output.cancel(mayInterruptIfRunning);
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.Output#isCancelled()
+		 */
+		@Override
+		public boolean isCancelled() {
+			return output.isCancelled();
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.Output#isDone()
+		 */
+		@Override
+		public boolean isDone() {
+
+			return output.isDone();
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.Output#get(long, java.util.concurrent.TimeUnit)
+		 */
+		@Override
+		public V get(long timeout, TimeUnit unit) {
+
 			return output;
 		}
-		/* (non-Javadoc)
-		 * @see org.xmlrobot.genesis.Output#set(java.lang.Object)
-		 */
-		@Override
-		public void set(V value) {
-			output = value;
-		}
-		/* (non-Javadoc)
-		 * @see org.xmlrobot.genesis.Message.Transmitter#push(org.xmlrobot.genesis.Reproducible)
-		 */
-		@Override
-		public abstract void push(K child);
-		
-		/* (non-Javadoc)
-		 * @see org.xmlrobot.genesis.Message.Transmitter#inject(org.xmlrobot.genesis.Reproducible)
-		 */
-		@Override
-		public abstract void inject(V child);
 	}
 
 	/**
@@ -388,6 +420,33 @@ public abstract class Hypergenesis
 			return type.getDeclaredConstructor
 					(arg0.getClass(), arg1.getClass(), arg2.getClass()).
 									newInstance(arg0, arg1, arg2);
+		}
+		catch(ClassCastException |
+				InstantiationException |
+					IllegalAccessException |
+						IllegalArgumentException |
+					InvocationTargetException |
+				NoSuchMethodException |
+			SecurityException e) {
+			
+			throw new Abort(e);
+		}
+	}
+	/**
+	 * {@link TimeListener} instantiation method #4.
+	 * @param type the instantiated type
+	 * @param parity {@link Parity} the gender
+	 * @return the new X instance
+	 */
+	protected static <T,U,K,V,R> T instance(Class<T> type, U arg0, K arg1, V arg2, R arg3) {
+		
+		if (!exists(type, arg0, arg1, arg2, arg3))
+			throw new Abort();
+		
+		try {
+			return type.getDeclaredConstructor
+					(arg0.getClass(), arg1.getClass(), arg2.getClass(), arg3.getClass()).
+									newInstance(arg0, arg1, arg2, arg3);
 		}
 		catch(ClassCastException |
 				InstantiationException |

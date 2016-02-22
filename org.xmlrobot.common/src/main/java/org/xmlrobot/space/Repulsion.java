@@ -37,14 +37,6 @@ public abstract class Repulsion<K,V>
 		super();
 	}
 	/**
-     * {@link Repulsion} class constructor.
-	 * @param type the inherited type
-     * @param parent the parent of inheritance
-	 */
-    protected Repulsion(Class<? extends Mass<K,V>> type, Mass<K,V> parent) {
-		super(type, parent);
-	}
-	/**
 	 * Repulsion default class constructor.
 	 * @param type the inherited type
 	 * @param gen {@link Parity} the gender
@@ -73,26 +65,6 @@ public abstract class Repulsion<K,V>
 		super(type, key, value, gen);
 	}
 	/**
-	 * {@link Repulsion} class constructor.
-	 * @param type the type
-	 * @param stem {@link Mass} the stem
-	 * @param parent {@link Mass} the parent
-	 */
-	protected Repulsion(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
-			Mass<K,V> parent) {
-		super(type, stem, parent);
-	}
-	/**
-	 * {@link Repulsion} class constructor.
-	 * @param type the type
-	 * @param stem {@link Mass} the stem
-	 * @param gen {@link Parity} the gender
-	 */
-	protected Repulsion(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
-			Parity gen) {
-		super(type, stem, gen);
-	}
-	/**
 	 * Repulsion class constructor.
 	 * @param type the type
 	 * @param stem the value
@@ -113,15 +85,6 @@ public abstract class Repulsion<K,V>
 	protected Repulsion(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
 			K key, V value, Parity gen) {
 		super(type, stem, key, value, gen);
-	}
-	/**
-	 * Repulsion class constructor.
-	 * @param type the inherited type
-	 * @param antitype the inherited antitype
-	 * @param parent the parent of inheritance
-	 */
-	protected Repulsion(Class<? extends Mass<K,V>> type, Class<? extends Mass<V,K>> antitype, Mass<K,V> parent) {
-		super(type, antitype, parent);
 	}
 	/**
 	 * Repulsion class constructor.
@@ -161,19 +124,14 @@ public abstract class Repulsion<K,V>
      * @see org.xmlrobot.genesis.TimeListener#replaceNegative(java.lang.Object, java.lang.Object, java.lang.Object)
      */
     public boolean replaceValue(K key, V oldValue, V newValue) {
-        
-    	Mass<K,V> child = getChild();
-    	
-    	if(key.equals(getKey())) {
 
+    	if(key.equals(getKey())) {
     		return message.compareAndSet(Mass.VALUE, oldValue, newValue);
     	}
-    	else if(child != null) {
-    		
-    		return child.replaceValue(key, oldValue, newValue);
+    	else if(!isEmpty()) {
+    		return getChild().replaceValue(key, oldValue, newValue);
     	}
     	else {
-    		
     		return false;
     	}
     }
@@ -182,14 +140,21 @@ public abstract class Repulsion<K,V>
      */
     public boolean replaceKey(V value, K oldKey, K newKey) {
     	
-    	return get().replaceValue(value, oldKey, newKey);
+    	if(value.equals(getValue())) {
+    		return message.compareAndSet(Mass.KEY, oldKey, newKey);
+    	}
+    	else if(!isEmpty()) {
+    		return getChild().replaceKey(value, oldKey, newKey);
+    	}
+    	else {
+    		return false;
+    	}
     }
 
     /* (non-Javadoc)
      * @see org.xmlrobot.genesis.TimeListener#replaceAllNegative(java.util.function.BiFunction)
      */
     public void replaceAllValues(BiFunction<? super K, ? super V, ? extends V> function) {
-        
     	Objects.requireNonNull(function);
         for (Mass<K,V> entry : this) {
             K k;
@@ -217,26 +182,41 @@ public abstract class Repulsion<K,V>
      * @see org.xmlrobot.genesis.TimeListener#replaceAllPositive(java.util.function.BiFunction)
      */
     public void replaceAllKeys(BiFunction<? super V, ? super K, ? extends K> function) {
-    	
-    	get().replaceAllValues(function);
+    	Objects.requireNonNull(function);
+        for (Mass<K,V> entry : this) {
+            K k;
+            V v;
+            try {
+                k = entry.getKey();
+                v = entry.getValue();
+            } catch(IllegalStateException ise) {
+                // this usually means the entry is no longer in the map.
+                throw new ConcurrentModificationException(ise);
+            }
+
+            // ise thrown from function is not a cme.
+            k = function.apply(v, k);
+
+            try {
+                entry.setKey(k);
+            } catch(IllegalStateException ise) {
+                // this usually means the entry is no longer in the map.
+                throw new ConcurrentModificationException(ise);
+            }
+        }
     }
     /* (non-Javadoc)
      * @see org.xmlrobot.genesis.TimeListener#replaceNegative(java.lang.Object, java.lang.Object)
      */
     public V replaceValue(K key, V value) {
     	
-    	Mass<K,V> child = getChild();
-    	
     	if(key.equals(getKey())) {
-
     		return message.getAndSet(Mass.VALUE, value);
     	}
-    	else if(child != null) {
-    		
-    		return child.replaceValue(key, value);
+    	else if(!isEmpty()) {
+    		return getChild().replaceValue(key, value);
     	}
     	else {
-    		
     		return null;
     	}
     }
@@ -244,7 +224,15 @@ public abstract class Repulsion<K,V>
      * @see org.xmlrobot.genesis.TimeListener#replacePositive(java.lang.Object, java.lang.Object)
      */
     public K replaceKey(V value, K key) {
-    	
-    	return get().replaceValue(value, key);
+
+    	if(value.equals(getValue())) {
+    		return message.getAndSet(Mass.KEY, key);
+    	}
+    	else if(!isEmpty()) {
+    		return getChild().replaceKey(value, key);
+    	}
+    	else {
+    		return null;
+    	}
     }
 }

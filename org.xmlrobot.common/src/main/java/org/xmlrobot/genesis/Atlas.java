@@ -74,7 +74,7 @@ import org.xmlrobot.util.Abort;
 public interface Atlas
 	<K,V,T extends Pair<K,V,T>> 
 		extends Pair<K,V,T> {
-
+	
     /**
      * Returns <tt>true</tt> if this atlas contains an mapping for the specified
      * key.  More formally, returns <tt>true</tt> if and only if

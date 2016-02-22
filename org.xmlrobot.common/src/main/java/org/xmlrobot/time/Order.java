@@ -83,7 +83,7 @@ public abstract class Order
 	 */
 	public synchronized K orderSuper(K listener) {
 		// compare ourself self with new listener
-		int cmp1 = compare(getType().cast(this), listener);
+		int cmp1 = compare(call(), listener);
 		// if listener is higher or equal than current instance, 
 		// set child as new parent.
 		if(cmp1 >= 0) {

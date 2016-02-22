@@ -34,14 +34,6 @@ public abstract class Attraction<K,V>
 		super();
 	}
 	/**
-     * {@link Attraction} class constructor.
-	 * @param type the inherited type
-     * @param parent the parent of inheritance
-	 */
-    protected Attraction(Class<? extends Mass<K,V>> type, Mass<K,V> parent) {
-		super(type, parent);
-	}
-	/**
 	 * Attraction default class constructor.
 	 * @param type the inherited type
 	 * @param gen {@link Parity} the gender
@@ -69,58 +61,7 @@ public abstract class Attraction<K,V>
 	protected Attraction(Class<? extends Mass<K,V>> type, K key, V value, Parity gen) {
 		super(type, key, value, gen);
 	}
-	/**
-	 * {@link Attraction} class constructor.
-	 * @param type the type
-	 * @param stem {@link Mass} the stem
-	 * @param parent {@link Mass} the parent
-	 */
-	protected Attraction(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
-			Mass<K,V> parent) {
-		super(type, stem, parent);
-	}
-	/**
-	 * {@link Attraction} class constructor.
-	 * @param type the type
-	 * @param stem {@link Mass} the stem
-	 * @param gen {@link Parity} the gender
-	 */
-	protected Attraction(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
-			Parity gen) {
-		super(type, stem, gen);
-	}
-	/**
-	 * {@link Attraction} class constructor.
-	 * @param type the type
-	 * @param stem the value
-	 * @param parity {@link Parity} the gender
-	 */
-	protected Attraction(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
-			K key, V value, Mass<K,V> parent) {
-		super(type, stem, key, value, parent);
-	}
-	/**
-	 * {@link Attraction} class constructor.
-	 * @param type the inherited type
-	 * @param stem the opposite instance
-	 * @param key the key
-	 * @param value the value
-	 * @param gen {@link Parity} the gender
-	 */
-	protected Attraction(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
-			K key, V value, Parity gen) {
-		super(type, stem, key, value, gen);
-	}
-	/**
-	 * {@link Attraction} class constructor.
-	 * @param type the inherited type
-	 * @param antitype the inherited antitype
-	 * @param parent the parent of inheritance
-	 */
-	protected Attraction(Class<? extends Mass<K,V>> type, Class<? extends Mass<V,K>> antitype, 
-			Mass<K,V> parent) {
-		super(type, antitype, parent);
-	}
+
 	/**
 	 * Attraction class constructor.
 	 * @param type the inherited type
@@ -159,15 +100,12 @@ public abstract class Attraction<K,V>
     /* (non-Javadoc)
      * @see org.xmlrobot.genesis.TimeListener#containsPositive(java.lang.Object)
      */
-	public boolean containsKey(K positive) {
-        
-		Mass<K,V> child = getChild();
-		
-		if(positive.equals(getKey())) {
+	public boolean containsKey(K key) {
+		if(key.equals(getKey())) {
 			return true;
 		}
-		else if(child != null) {
-			return child.containsKey(positive);
+		else if(!isEmpty()) {
+			return getChild().containsKey(key);
 		}
 		else {
 			return false;
@@ -176,26 +114,31 @@ public abstract class Attraction<K,V>
     /* (non-Javadoc)
      * @see org.xmlrobot.genesis.TimeListener#containsNegative(java.lang.Object)
      */
-    public boolean containsValue(V negative)
-    {
-    	return get().containsKey(negative);
+    public boolean containsValue(V value) {
+    	if(value.equals(getValue())) {
+			return true;
+		}
+		else if(!isEmpty()) {
+			return getChild().containsValue(value);
+		}
+		else {
+			return false;
+		}
     }
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.TimeListener#collectKeys(java.util.Set)
 	 */
 	@Override
-	public Congregation<K> collectKeys(Congregation<K> keys)
-	{
+	public Congregation<K> collectKeys(Congregation<K> keys) {
+		// add key to congregation
 		keys.add(getKey());
-		
-		Mass<K,V> child = getChild();
-		
-		if(child != null)
-		{
-			return child.collectKeys(keys);
+		// check if we are the future
+		if(!isEmpty()) {
+			// follow collecting
+			return getChild().collectKeys(keys);
 		}
-		else
-		{
+		else {
+			// turn back result
 			return keys;
 		}
 	}
@@ -203,22 +146,29 @@ public abstract class Attraction<K,V>
 	 * @see org.xmlrobot.genesis.TimeListener#collectValues(java.util.Collection)
 	 */
 	@Override
-	public Congregation<V> collectValues(Congregation<V> values)
-	{
-		return get().collectKeys(values);
+	public Congregation<V> collectValues(Congregation<V> values) {
+		// add key to congregation
+		values.add(getValue());
+		// check if we are the future
+		if (!isEmpty()) {
+			// follow collecting
+			return getChild().collectValues(values);
+		} else {
+			// turn back result
+			return values;
+		}
 	}
     /* (non-Javadoc)
      * @see org.xmlrobot.genesis.TimeListener#forEachPositive(java.util.function.BiConsumer)
      */
     public void forEachKey(BiConsumer<? super K,? super V> action) {
-
     	Objects.requireNonNull(action);
-        for (Mass<K,V> entry : this) {
+        for (Mass<K,V> child : this) {
             K k;
             V v;
             try {
-                k = entry.getKey();
-                v = entry.getValue();
+                k = child.getKey();
+                v = child.getValue();
             } catch(IllegalStateException ise) {
                 // this usually means the entry is no longer in the map.
                 throw new ConcurrentModificationException(ise);
@@ -230,7 +180,18 @@ public abstract class Attraction<K,V>
      * @see org.xmlrobot.genesis.TimeListener#forEachNegative(java.util.function.BiConsumer)
      */
     public void forEachValue(BiConsumer<? super V, ? super K> action) {
-
-    	get().forEachKey(action);
+    	Objects.requireNonNull(action);
+        for (Mass<K,V> child : this) {
+    		K k;
+    		V v;
+            try {
+                k = child.getKey();
+                v = child.getValue();
+            } catch(IllegalStateException ise) {
+                // this usually means the entry is no longer in the map.
+                throw new ConcurrentModificationException(ise);
+            }
+            action.accept(v, k);
+    	}
     }
 }

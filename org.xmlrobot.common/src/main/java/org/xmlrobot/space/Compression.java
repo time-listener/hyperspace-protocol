@@ -30,16 +30,7 @@ public abstract class Compression<K,V>
 	 * {@link Compression} default class constructor.
 	 */
 	public Compression() {
-	
 		super();
-	}
-	/**
-     * {@link Compression} class constructor.
-	 * @param type the inherited type
-     * @param parent the parent of inheritance
-	 */
-    protected Compression(Class<? extends Mass<K,V>> type, Mass<K,V> parent) {
-		super(type, parent);
 	}
 	/**
 	 * Compression default class constructor.
@@ -68,58 +59,6 @@ public abstract class Compression<K,V>
 	 */
 	protected Compression(Class<? extends Mass<K,V>> type, K key, V value, Parity gen) {
 		super(type, key, value, gen);
-	}
-	/**
-	 * {@link Compression} class constructor.
-	 * @param type the type
-	 * @param stem {@link Mass} the stem
-	 * @param parent {@link Mass} the parent
-	 */
-	protected Compression(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
-			Mass<K,V> parent) {
-		super(type, stem, parent);
-	}
-	/**
-	 * {@link Compression} class constructor.
-	 * @param type the type
-	 * @param stem {@link Mass} the stem
-	 * @param gen {@link Parity} the gender
-	 */
-	protected Compression(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
-			Parity gen) {
-		super(type, stem, gen);
-	}
-	/**
-	 * {@link Compression} class constructor.
-	 * @param type the type
-	 * @param stem {@link Mass} the stem
-	 * @param parity {@link Parity} the gender
-	 */
-	protected Compression(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
-			K key, V value, Mass<K,V> parent) {
-		super(type, stem, key, value, parent);
-	}
-	/**
-	 * {@link Compression} class constructor.
-	 * @param type the inherited type
-	 * @param stem {@link Mass} the stem
-	 * @param key the key
-	 * @param value the value
-	 * @param gen {@link Parity} the gender
-	 */
-	protected Compression(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
-			K key, V value, Parity gen) {
-		super(type, stem, key, value, gen);
-	}
-	/**
-	 * {@link Compression} class constructor.
-	 * @param type the inherited type
-	 * @param antitype the inherited antitype
-	 * @param parent the parent of inheritance
-	 */
-	protected Compression(Class<? extends Mass<K,V>> type, Class<? extends Mass<V,K>> antitype, 
-			Mass<K,V> parent) {
-		super(type, antitype, parent);
 	}
 	/**
 	 * Compression class constructor.
@@ -157,28 +96,18 @@ public abstract class Compression<K,V>
 	}
 
 	/* (non-Javadoc)
-	 * @see java.lang.Object#clone()
-	 */
-	@Override
-	public Compression<K,V> clone() {
-		
-		return (Compression<K,V>) super.clone();
-	}
-	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.TimeListener#callPositive(java.lang.Object)
 	 */
 	@Override
 	public Mass<K,V> call(K key) {
 
-		Mass<K,V> child = getChild();
-		
 		if(key.equals(getKey())) {
 			
 			return call(); // a.k.a. this
 		}
-		else if(child != null) {
+		else if(!isEmpty()) {
 			
-			return child.call(key);
+			return getChild().call(key);
 		}
 		else {
 			return null;
@@ -189,23 +118,31 @@ public abstract class Compression<K,V>
 	 */
 	@Override
 	public Mass<V,K> callReversed(V value) {
-		
-		return get().call(value);
+
+		if(value.equals(getValue())) {
+			
+			return get(); // a.k.a. stem
+		}
+		else if(!isEmpty()) {
+			
+			return getChild().callReversed(value);
+		}
+		else {
+			return null;
+		}
 	}
     /* (non-Javadoc)
      * @see org.xmlrobot.genesis.TimeListener#getNegative(java.lang.Object)
      */
     public V getValue(K key) {
-        
-    	Mass<K,V> child = getChild();
-        
+    	
         if(key.equals(getKey())) {
         	
         	return getValue();
         }
-        else if(child != null) {
+        else if(!isEmpty()) {
         	
-        	return child.getValue(key);
+        	return getChild().getValue(key);
         }
         else {
         	return null;
@@ -215,8 +152,18 @@ public abstract class Compression<K,V>
      * @see org.xmlrobot.genesis.TimeListener#getPositive(java.lang.Object)
      */
     public K getKey(V value) {
-        
-        return get().getValue(value);
+
+        if(value.equals(getValue())) {
+        	
+        	return getKey();
+        }
+        else if(!isEmpty()) {
+        	
+        	return getChild().getKey(value);
+        }
+        else {
+        	return null;
+        }
     }
     /* (non-Javadoc)
      * @see org.xmlrobot.genesis.TimeListener#getOrDefault(java.lang.Object, java.lang.Object)
@@ -231,7 +178,9 @@ public abstract class Compression<K,V>
      * @see org.xmlrobot.genesis.TimeListener#getOrDefault(java.lang.Object, java.lang.Object)
      */
     public K getKeyOrDefault(V value, K defaultKey) {
-        
-    	return get().getValueOrDefault(value, defaultKey);
+    	K k;
+        return (((k = getKey(value)) != null) || containsValue(value))
+            ? k
+            : defaultKey;
     }
 }

@@ -443,8 +443,7 @@ public abstract class Freedom
     /* (non-Javadoc)
      * @see org.xmlrobot.genesis.TimeListener#remove(java.lang.Object)
      */
-    public synchronized Object remove(Object o)
-    {
+    public synchronized Object remove(Object o) {
     	K child;
     	
     	if(o == this) {
@@ -511,4 +510,60 @@ public abstract class Freedom
         }
         return modified;
     }
+    /* (non-Javadoc)
+     * @see org.xmlrobot.time.Logic#swap(org.xmlrobot.genesis.TimeListener)
+     */
+    @Override
+	public synchronized void swap(K listener) {
+		// check paranoia and existence
+		if(listener == this || listener == null)
+			return;
+		// get listener's parent and child
+		K parent = listener.getParent();
+		K child = listener.getChild();
+		// call hyper-swap
+		super.swap(listener);
+		// check listener inheritance
+		if (child != null) {
+			// check it is not my paranoia
+			if (child != this) {
+				// set child as listener's child
+				setChild(child);
+				// set child listener's parent as current instance
+				child.setParent(call());
+				// check existence
+				if (parent != null) {
+					// check is paranoia
+					if (parent != this) {
+						// set parent as listener's parent
+						setParent(parent);
+						// set parent listener's child as current instance
+						parent.setChild(call());
+					} else {
+						// it isn't paranoia
+						setParent(listener);
+					}
+				} else {
+					// nullify parent inheritance
+					setParent(null);
+				}
+			} else {
+				// listener is my child
+				setChild(listener);
+				// I am the parent of it
+				listener.setParent(call());
+			}
+		} else if (parent != null) {
+			// nullify child inheritance
+			setChild(null);
+			// set parent as listener's parent
+			setParent(parent);
+			// set parent listener's child as current instance
+			parent.setChild(call());
+		} else {
+			// nullify inheritance
+			setChild(null);
+			setParent(null);
+		}
+	}
 }

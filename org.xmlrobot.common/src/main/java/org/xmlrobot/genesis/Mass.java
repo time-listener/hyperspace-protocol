@@ -11,7 +11,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
- * 
  * Massive message implementation interface.
  * 
  * <p>Everyone in the <tt>hyperspace</tt> implements the <tt>mass</tt>. 
@@ -77,7 +76,7 @@ import java.util.function.Function;
  */
 public interface Mass<K,V>
 	extends TimeListener<Mass<K,V>,Mass<V,K>>, 
-		Pair<K,V,Mass<K,V>>, Plasma<K,V>  {
+		Pair<K,V,Mass<K,V>>  {
 
 	/**
 	 * The key.
@@ -94,6 +93,17 @@ public interface Mass<K,V>
 	 */
 	@Override
 	Mass<K,V> clone();
+	
+	// Visors
+	/**
+	 * @return 
+	 */
+	Congregation<K> keyVisor();
+	
+	/**
+	 * @return
+	 */
+	Congregation<V> valueVisor();
 	
 	/**
      * Returns the key corresponding to this time-listener.
@@ -214,10 +224,11 @@ public interface Mass<K,V>
 	
 	/**
 	 * Inquires the inheritance for matching an element.
-	 * Return null if entity hasn't been found.
-	 * @param key the key of the process that you're looking for.
+	 * @param key the key of the process that you're looking for
+	 * @return null if entity hasn't been found
 	 */
 	Mass<K,V> call(K key);
+
 	
 	/**
 	 * Inquires the inheritance for matching an element.
@@ -1452,4 +1463,27 @@ public interface Mass<K,V>
      */
     K mergeInverted(V value, K key,
             BiFunction<? super K, ? super K, ? extends K> remappingFunction) ;
+    
+    /* (non-Javadoc)
+     * @see org.xmlrobot.genesis.TimeListener#matrix()
+     */
+    @Override
+    Mass.Transmuter<K,V> matrix();
+    
+    /**
+     * Mass transmutation implementation interface.
+     * @author joan
+     *
+     * @param <K> is the key
+     * @param <V> is the value
+     */
+    interface Transmuter<K,V> extends TimeListener.Transmitter<Mass<K,V>,Mass<V,K>> {
+    	
+    	/**
+    	 * Creates new mass.
+    	 * @param key is the key
+    	 * @param value is the value
+    	 */
+    	void put(K key, V value);
+    }
 }

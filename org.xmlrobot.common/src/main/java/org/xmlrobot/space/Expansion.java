@@ -38,14 +38,6 @@ public abstract class Expansion <K,V>
 		super();
 	}
 	/**
-     * {@link Expansion} class constructor.
-	 * @param type the inherited type
-     * @param parent the parent of inheritance
-	 */
-    protected Expansion(Class<? extends Mass<K,V>> type, Mass<K,V> parent) {
-		super(type, parent);
-	}
-	/**
 	 * Expansion default class constructor.
 	 * @param type the type
 	 * @param gen {@link Parity} the gender
@@ -76,26 +68,6 @@ public abstract class Expansion <K,V>
 		super(type, key, value, gen);
 	}
 	/**
-	 * {@link Expansion} class constructor.
-	 * @param type the type
-	 * @param stem {@link Mass} the stem
-	 * @param parent {@link Mass} the parent
-	 */
-	protected Expansion(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
-			Mass<K,V> parent) {
-		super(type, stem, parent);
-	}
-	/**
-	 * {@link Expansion} class constructor.
-	 * @param type the type
-	 * @param stem {@link Mass} the stem
-	 * @param gen {@link Parity} the gender
-	 */
-	protected Expansion(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
-			Parity gen) {
-		super(type, stem, gen);
-	}
-	/**
 	 * Expansion class constructor.
 	 * @param type the type
 	 * @param stem the value
@@ -116,16 +88,6 @@ public abstract class Expansion <K,V>
 	protected Expansion(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
 			K key, V value, Parity gen) {
 		super(type, stem, key, value, gen);
-	}
-	/**
-	 * Expansion class constructor.
-	 * @param type the inherited type
-	 * @param antitype the inherited antitype
-	 * @param parent the parent of inheritance
-	 */
-	protected Expansion(Class<? extends Mass<K,V>> type, Class<? extends Mass<V,K>> antitype, 
-			Mass<K,V> parent) {
-		super(type, antitype, parent);
 	}
 	/**
 	 * Expansion class constructor.
@@ -173,7 +135,7 @@ public abstract class Expansion <K,V>
         if ((v = getValue(key)) == null) {
             V newValue;
             if ((newValue = mappingFunction.apply(key)) != null) {
-                putValue(key, newValue);
+        		putValue(key, newValue);	
                 return newValue;
             }
         }
@@ -182,17 +144,24 @@ public abstract class Expansion <K,V>
     /* (non-Javadoc)
      * @see org.xmlrobot.genesis.TimeListener#computePositiveIfAbsent(java.lang.Object, java.util.function.Function)
      */
-    public K computeInvertedIfAbsent(V key, 
+    public K computeInvertedIfAbsent(V value, 
     		Function<? super V,? extends K> mappingFunction) {
-    	
-    	return get().computeIfAbsent(key, mappingFunction);
+    	Objects.requireNonNull(mappingFunction);
+        K k;
+        if ((k = getKey(value)) == null) {
+            K newKey;
+            if ((newKey = mappingFunction.apply(value)) != null) {
+        		putKey(value, newKey);	
+                return newKey;
+            }
+        }
+        return k;
     }
     /* (non-Javadoc)
      * @see org.xmlrobot.genesis.TimeListener#compute(java.lang.Object, java.util.function.BiFunction)
      */
     public V compute(K key,
     		BiFunction<? super K,? super V,? extends V> remappingFunction) {
-    	
         Objects.requireNonNull(remappingFunction);
         V oldValue = getValue(key);
         V newValue = remappingFunction.apply(key, oldValue);
@@ -218,8 +187,25 @@ public abstract class Expansion <K,V>
      */
     public K computeInverted(V value,
     		BiFunction<? super V, ? super K, ? extends K> remappingFunction) {
-    	
-    	return get().compute(value, remappingFunction);
+    	Objects.requireNonNull(remappingFunction);
+        K oldKey = getKey(value);
+        K newKey = remappingFunction.apply(value, oldKey);
+        
+        if (newKey == null) {
+            // delete mapping
+            if (oldKey != null || containsValue(value)) {
+                // something to remove
+                remove(value);
+                return null;
+            } else {
+                // nothing to do. Leave things as they were.
+                return null;
+            }
+        } else {
+            // add or replace old mapping
+            putKey(value, newKey);
+            return newKey;
+        }
     }
 
 	/* (non-Javadoc)
@@ -227,19 +213,17 @@ public abstract class Expansion <K,V>
 	 */
 	public V computeIfPresent(K key, 
 			BiFunction<? super K,? super V,? extends V> remappingFunction) {
-        
 		Objects.requireNonNull(remappingFunction);
-        V oldNegative;
-        if ((oldNegative = getValue(key)) != null) {
-            V newNegative = remappingFunction.apply(key, oldNegative);
-            if (newNegative != null) {
+        V oldValue;
+        if ((oldValue = getValue(key)) != null) {
+            V newValue = remappingFunction.apply(key, oldValue);
+            if (newValue != null) {
                 try {
-					putValue(key, newNegative);
+            		putValue(key, newValue);	
 				} catch (Abort e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-                return newNegative;
+                return newValue;
             } else {
                 remove(key);
                 return null;
@@ -251,9 +235,25 @@ public abstract class Expansion <K,V>
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.TimeListener#computePositiveIfPresent(java.lang.Object, java.util.function.BiFunction)
 	 */
-	public K computeInvertedIfPresent(V key, 
+	public K computeInvertedIfPresent(V value, 
 			BiFunction<? super V,? super K,? extends K> remappingFunction) {
-		
-		return get().computeIfPresent(key, remappingFunction);
+		Objects.requireNonNull(remappingFunction);
+        K oldKey;
+        if ((oldKey = getKey(value)) != null) {
+            K newKey = remappingFunction.apply(value, oldKey);
+            if (newKey != null) {
+                try {
+            		putKey(value, newKey);	
+				} catch (Abort e) {
+					e.printStackTrace();
+				}
+                return newKey;
+            } else {
+                remove(value);
+                return null;
+            }
+        } else {
+            return null;
+        }
 	}
 }

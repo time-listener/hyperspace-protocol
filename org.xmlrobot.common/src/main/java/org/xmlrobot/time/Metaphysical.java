@@ -3,12 +3,10 @@
  */
 package org.xmlrobot.time;
 
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import javax.xml.bind.annotation.XmlTransient;
 
-import org.xmlrobot.genesis.Congregation;
 import org.xmlrobot.genesis.TimeListener;
 import org.xmlrobot.util.Parity;
 
@@ -123,7 +121,7 @@ public abstract class Metaphysical
 		}
 		// update inheritance
 		setParent(listener);
-		listener.setChild(getType().cast(this));
+		listener.setChild(call());
 		// return the current parent
 		return getPast();
 	}
@@ -138,110 +136,62 @@ public abstract class Metaphysical
         return modified;
     }
     /**
-     * Iterator of the future implementation class.
-     * Iterates over time concurrently to the future.
-     * <br<br>
-     * @author joan
-     *
-     */
-    protected class FutureIterator
-    	<T extends Congregation<T>> 
-    		implements Iterator<T> {
+	 * {@link Inheritance} abstract iterator implementation class.
+	 * @author joan
+	 *
+	 */
+	protected abstract class InheritanceIterator {
 
-    	T current;
-    	T next;
-    	int index;
+    	transient K current;
+    	transient K next;
+    	
     	/**
-    	 * 
+    	 * {@link InheritanceIterator} default class constructor.
+    	 * @param entity
     	 */
-    	public FutureIterator(T entry) {
-    		current = next = entry;
+    	protected InheritanceIterator(K entity) {
+    		current = next = entity;
     	}
-
-    	/* (non-Javadoc)
-    	 * @see java.util.Iterator#hasNext()
+    	/**
+    	 * @return <tt>true</tt> if has next entity to iterate
     	 */
-    	@Override
     	public boolean hasNext() {
     		return next != null;
     	}
-
-    	/* (non-Javadoc)
-    	 * @see java.util.Iterator#next()
-    	 */
-    	@Override
-    	public T next() {
-    		return this.nextListener();
-    	}
     	/**
-    	 * @return the next future gear
+    	 * @return the next future entity
     	 */
-    	final T nextListener() {
-    		T g = next;
+    	public final K forward() {
+    		K k = next;
 
-    		if (g == null) {
+    		if (k == null) {
     			if (current == null) {
     				throw new NoSuchElementException();
     			}
     		} 
     		else {
-    			current = g;
-    			next = g.getChild();
+    			current = k;
+    			next = k.getChild();
     		}
-    		return g;
+    		return k;
     	}
-    }
-    /**
-     * Iterator of the past implementation class.
-     * Iterates through time recurrently to the past.
-     * @author joan
-     *
-     */
-    protected class PastIterator
-    	<T extends Congregation<T>> 
-    		implements Iterator<T> {
-    	
-    	T current;
-    	T prev;
-    	int index;
+    	public abstract void remove();
     	/**
-    	 * 
+    	 * @return the previous past entity
     	 */
-    	public PastIterator(T entry) {
-    		current = prev = entry;
-    	}
-    	/*
-    	 * (non-Javadoc)
-    	 * @see java.util.Iterator#hasNext()
-    	 */
-    	@Override
-    	public boolean hasNext() {
-    		return prev != null;
-    	}
-    	/*
-    	 * (non-Javadoc)
-    	 * @see java.util.Iterator#next()
-    	 */
-    	@Override
-    	public T next() {
-    		return this.previousListener();
-    	}
-    	/**
-    	 * @return the next future gear
-    	 */
-    	final T previousListener() {
-    		T g = prev;
+    	public final K backward() {
+    		K k = next;
 
-    		if (g == null) {
+    		if (k == null) {
     			if (current == null) {
     				throw new NoSuchElementException();
     			}
     		} 
     		else {
-    			current = g;
-    			prev = g.getParent();
+    			current = k;
+    			next = k.getParent();
     		}
-    		return g;
+    		return k;
     	}
-    }
+	}
 }

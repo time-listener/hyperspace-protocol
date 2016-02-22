@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.xmlrobot.genesis.MassListener;
 import org.xmlrobot.genesis.TimeListener;
 import org.xmlrobot.genesis.Phaser;
-import org.xmlrobot.horizon.Takion;
+import org.xmlrobot.horizon.Tachyon;
 import org.xmlrobot.util.Parity;
 
 /**
@@ -101,7 +101,7 @@ public abstract class Recurrence
 	 * @see org.xmlrobot.hyperspace.Abstraction#mass(org.xmlrobot.genesis.MassListener, org.xmlrobot.horizon.Takion)
 	 */
 	@Override
-	public void mass(MassListener sender, Takion<?,?> event) {
+	public void mass(MassListener sender, Tachyon<?,?> event) {
 		// avoid antimatter contact
 		if(!sender.equals(get()) && !sender.equals(this))
 			// broadcast event
@@ -110,9 +110,9 @@ public abstract class Recurrence
 	/**
 	 * Sends MASS to the past.
 	 * @param sender {@link Source} the transmitter entity.
-	 * @param event {@link Takion} the mass being sent.
+	 * @param event {@link Tachyon} the mass being sent.
 	 */
-	protected void push(Takion<?,?> event) {
+	protected void push(Tachyon<?,?> event) {
 		// a-synchronized
 		for(MassListener listener : massListeners) {
 			

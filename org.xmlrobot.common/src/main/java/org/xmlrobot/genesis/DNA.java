@@ -9,8 +9,6 @@ import java.util.function.Function;
 
 import org.xmlrobot.util.Abort;
 
-
-
 /**
  * An {@link org.xmlrobot.genesis.Atlas} providing thread safety and atomicity
  * guarantees.
@@ -66,7 +64,7 @@ public interface DNA<K,V>
      * @implSpec The default implementation is equivalent to, for this
      * {@code DNA}:
      * <pre> {@code
-     * for ((Map.Entry<K, V> pair : DNA.entrySet())
+     * for ((Mass<K, V> pair : DNA.entrySet())
      *     action.accept(pair.getKey(), pair.getValue());
      * }</pre>
      *

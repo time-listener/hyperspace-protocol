@@ -3,13 +3,29 @@
  */
 package org.xmlrobot.space;
 
+import java.io.File;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceEvent;
+import org.osgi.framework.ServiceRegistration;
+import org.xmlrobot.genesis.Congregation;
+import org.xmlrobot.genesis.MassListener;
 import org.xmlrobot.genesis.TimeListener;
 import org.xmlrobot.genesis.Mass;
-import org.xmlrobot.horizon.Takion;
+import org.xmlrobot.horizon.Tachyon;
 import org.xmlrobot.hyperspace.Hyperspace;
 import org.xmlrobot.time.Further;
+import org.xmlrobot.util.Abort;
+import org.xmlrobot.util.Command;
 import org.xmlrobot.util.Parity;
 
 /**
@@ -52,21 +68,21 @@ public abstract class Hyperclock<K,V>
 	 * 1539586331627310934L
 	 */
 	private static final long serialVersionUID = 1539586331627310934L;
-	
+
+	// Visors
+    /**
+     * Each of these fields are initialized to contain an instance of the
+     * appropriate view the first time this view is requested.  The views are
+     * stateless, so there's no reason to create more than one of each.
+     */
+    protected transient volatile Congregation<K> keyVisor;
+    protected transient volatile Congregation<V> valueVisor;
+    
 	/**
 	 * {@link Hyperclock} default class constructor.
 	 */
 	public Hyperclock() {
-	
 		super();
-	}
-	/**
-     * {@link Hyperclock} class constructor.
-	 * @param type the inherited type
-     * @param parent the parent of inheritance
-	 */
-    protected Hyperclock(Class<? extends Mass<K,V>> type, Mass<K,V> parent) {
-		super(type, parent);
 	}
 	/**
 	 * {@link Hyperclock} default class constructor.
@@ -95,58 +111,6 @@ public abstract class Hyperclock<K,V>
 	 */
 	protected Hyperclock(Class<? extends Mass<K,V>> type, K key, V value, Parity gen) {
 		super(type, key, value, gen);
-	}
-	/**
-	 * {@link Hyperclock} class constructor.
-	 * @param type the type
-	 * @param stem {@link Mass} the stem
-	 * @param parent {@link Mass} the parent
-	 */
-	protected Hyperclock(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
-			Mass<K,V> parent) {
-		super(type, stem, parent);
-	}
-	/**
-	 * {@link Hyperclock} class constructor.
-	 * @param type the type
-	 * @param stem {@link Mass} the stem
-	 * @param gen {@link Parity} the gender
-	 */
-	protected Hyperclock(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
-			Parity gen) {
-		super(type, stem, gen);
-	}
-	/**
-	 * {@link Hyperclock} class constructor.
-	 * @param type the type
-	 * @param stem the value
-	 * @param parity {@link Parity} the gender
-	 */
-	protected Hyperclock(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
-			K key, V value, Mass<K,V> parent) {
-		super(type, stem, key, value, parent);
-	}
-	/**
-	 * {@link Hyperclock} class constructor.
-	 * @param type the inherited type
-	 * @param stem the opposite instance
-	 * @param key the key
-	 * @param value the value
-	 * @param gen {@link Parity} the gender
-	 */
-	protected Hyperclock(Class<? extends Mass<K,V>> type, Mass<V,K> stem, 
-			K key, V value, Parity gen) {
-		super(type, stem, key, value, gen);
-	}
-	/**
-	 * {@link Hyperclock} class constructor.
-	 * @param type the inherited type
-	 * @param antitype the inherited antitype
-	 * @param parent the parent of inheritance
-	 */
-	protected Hyperclock(Class<? extends Mass<K,V>> type, 
-			Class<? extends Mass<V,K>> antitype, Mass<K,V> parent) {
-		super(type, antitype, parent);
 	}
 	/**
 	 * {@link Hyperclock} class constructor.
@@ -185,11 +149,11 @@ public abstract class Hyperclock<K,V>
 		super(type, instance(antitype, value, key), key, value, gen);
 	}
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.gravity.Concurrence#pulse(org.xmlrobot.genesis.Mass, org.xmlrobot.horizon.Graviton)
+	 * @see org.xmlrobot.time.Time#pulse(org.xmlrobot.genesis.TimeListener, org.xmlrobot.horizon.Takion)
 	 */
 	@Override
 	public synchronized <X extends TimeListener<X,Y>,Y extends TimeListener<Y,X>> 
-		void pulse(TimeListener<?,?> listener, Takion<Y,X> event) {
+		void pulse(TimeListener<?,?> listener, Tachyon<Y,X> event) {
 		// don't forget to call ancestral methods
 		super.pulse(listener, event);
 		// declare future inheritance
@@ -204,7 +168,7 @@ public abstract class Hyperclock<K,V>
 			child.pulse(listener, event);
 		}
 		// rebound recurrently
-		else get().echo(listener, new Takion<X,Y>(event.get()) {
+		else get().echo(listener, new Tachyon<X,Y>(event.get()) {
 			
 			/**
 			 * -8293062402759812992L
@@ -212,13 +176,12 @@ public abstract class Hyperclock<K,V>
 			private static final long serialVersionUID = -8293062402759812992L;
 		});
 	}
-
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.gravity.Recurrence#echo(org.xmlrobot.genesis.Mass, org.xmlrobot.horizon.Graviton)
+	 * @see org.xmlrobot.hyperspace.Recursion#echo(org.xmlrobot.genesis.TimeListener, org.xmlrobot.horizon.Takion)
 	 */
 	@Override
 	public synchronized <X extends TimeListener<X,Y>,Y extends TimeListener<Y,X>> 
-		void echo(TimeListener<?,?> listener, Takion<X,Y> event) {
+		void echo(TimeListener<?,?> listener, Tachyon<X,Y> event) {
 		// call inherited-super-ancestral-method
 		super.echo(listener, event);
 		// declare past channel
@@ -238,37 +201,21 @@ public abstract class Hyperclock<K,V>
 			listener.echo(this, event);
 		}
 	}
-
 	/**
 	 * The implementation of mass transmutation.
 	 * @author joan
-	 *
 	 */
-	protected class Transmuter 
-		extends Grid {
+	protected abstract class Translocator 
+		extends Grid 
+			implements Mass.Transmuter<K,V> {
 		
 		/**
 		 * @param output
 		 */
-		public Transmuter(Mass<V,K> output) {
+		public Translocator(Mass<V,K> output) {
 			super(output);
 		}
-		/* (non-Javadoc)
-		 * @see org.xmlrobot.gravity.Recursion.Grid#push(org.xmlrobot.genesis.Mass)
-		 */
-		@Override
-		public void push(Mass<K,V> child) {
 
-			output().get().add(child);
-		}
-		/* (non-Javadoc)
-		 * @see org.xmlrobot.gravity.Recursion.Grid#inject(org.xmlrobot.genesis.Mass)
-		 */
-		@Override
-		public void inject(Mass<V,K> child) {
-
-			output().add(child);
-		}
 		/* (non-Javadoc)
 		 * @see org.xmlrobot.gravity.Recursion.Grid#compare(org.xmlrobot.genesis.Mass, org.xmlrobot.genesis.Mass)
 		 */
@@ -279,20 +226,18 @@ public abstract class Hyperclock<K,V>
  			if (key != null) {
  				// check stem existence
  				if (value != null) {
- 					
- 					System.out.print("\n comparison :" + key.getName() + value.getName());
  					// reproduce yourselves
 					return super.reproduce(key, value);
  				}
  				else { 					
  					// get the output and set key-value pair
- 					push(key);
+ 					inject(key);
  	 				// get child
  					Mass<K,V> keyChild;
 	 				// get and check existence
  					if ((keyChild = key.getChild()) != null) {
  						// we can put another gear to the future chain
- 						push(keyChild);
+ 						inject(keyChild);
  					}
 					// root has a bigger chain
 					return 1;
@@ -300,13 +245,13 @@ public abstract class Hyperclock<K,V>
  			}
  			else if (value != null) {
  				// submit stem
- 				inject(value);
+ 				push(value);
  				// get complementary gear child
  				Mass<V,K> valueChild;
 				// get and check existence
  				if ((valueChild = value.getChild()) != null) {
  					// we can put another gear to the future chain
- 					inject(valueChild);
+ 					push(valueChild);
  				}
 				// stem has a bigger chain
  				return -1;
@@ -315,6 +260,299 @@ public abstract class Hyperclock<K,V>
  				// both chains are equal in depth
  				return 0;
  			}
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.Hypergenesis.Comparator#push(org.xmlrobot.genesis.TimeListener)
+		 */
+		@Override
+		public void inject(Mass<K,V> key) {
+			// clone child
+			put(key.getKey(), key.getValue());
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.Hypergenesis.Comparator#inject(org.xmlrobot.genesis.TimeListener)
+		 */
+		@Override
+		public void push(Mass<V,K> value) {
+			// clone child
+			put(value.getValue(), value.getKey());
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.Mass.Transmuter#put(java.lang.Object, java.lang.Object)
+		 */
+		@Override
+		public abstract void put(K key, V value);
+	}
+
+	/**
+	 * Abstract {@link Mass} visor implementation class.
+	 * @author joan
+	 */
+	protected abstract class MassVisor 
+		implements MassListener {
+		
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -6610760920482278671L;
+		
+		/**
+		 * The source child being visioned
+		 */
+		protected transient Mass<K,V> source;
+		
+		/**
+		 * @param source
+		 */
+		protected MassVisor(Mass<K,V> source) {
+			if(!exists(source))
+				throw new Abort();
+			
+			this.source = source;
+		}
+		// congregation non-parameterized types methods implementation
+		public void remove() {
+			return;
+		}
+		public Object remove(Object o) {
+			return null;
+		}
+		public void spin() {
+			return;
+		}
+		public Object[] toArray() {
+			return null;
+		}
+		public <X> X[] toArray(X[] a) {
+			return null;
+		}
+		public void polarize() {
+			return;
+		}
+		public int depth() {
+			return source.depth();
+		}
+		public boolean isEmpty() {
+	
+			return source.isEmpty();
+		}
+		public int size() {
+			return source.size();
+		}
+		public void clear() {
+			return;
+		}
+		public int delve(int counter) {
+	
+			return source.delve(counter);
+		}
+		public void write(File file) {
+			source.write(file);
+		}
+		public boolean hasMoreElements() {
+			return source.hasMoreElements();
+		}
+		/* (non-Javadoc)
+		 * @see java.lang.Object#clone()
+		 */
+		@Override
+		public Mass<K,V> clone() {
+			return source.clone();
+		}
+		// mass listener implementation
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.MassListener#getCommand()
+		 */
+		@Override
+		public Command getCommand() {
+			return source.getCommand();
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.MassListener#getContext()
+		 */
+		@Override
+		public BundleContext getContext() {
+			return source.getContext();
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.MassListener#getFamily()
+		 */
+		@Override
+		public ThreadGroup getFamily() {
+			return source.getFamily();
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.MassListener#getHost()
+		 */
+		@Override
+		public ServiceRegistration<?> getHost() {
+			return source.getHost();
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.MassListener#getName()
+		 */
+		@Override
+		public String getName() {
+			return source.getName();
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.MassListener#getRunner()
+		 */
+		@Override
+		public Thread getRunner() {
+			return source.getRunner();
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.MassListener#getGen()
+		 */
+		@Override
+		public Parity getGen() {
+			return source.getGen();
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.MassListener#setGen(org.xmlrobot.util.Parity)
+		 */
+		@Override
+		public void setGen(Parity value) {
+			return;
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.MassListener#dna()
+		 */
+		@Override
+		public MassListener dna() {
+			return source.dna();
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.MassListener#addMassListener(org.xmlrobot.genesis.MassListener)
+		 */
+		@Override
+		public void addMassListener(MassListener listener) {
+			source.addMassListener(listener);
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.MassListener#mass(org.xmlrobot.genesis.MassListener, org.xmlrobot.horizon.Takion)
+		 */
+		@Override
+		public void mass(MassListener sender, Tachyon<?,?> event) {
+			return;
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.MassListener#push(org.xmlrobot.util.Command)
+		 */
+		@Override
+		public void push(Command value) {
+			return;
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.MassListener#start(org.osgi.framework.BundleContext)
+		 */
+		@Override
+		public void start(BundleContext context) {
+			return;
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.MassListener#stop(org.osgi.framework.BundleContext)
+		 */
+		@Override
+		public void stop(BundleContext context) {
+			return;
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.MassListener#update()
+		 */
+		@Override
+		public void update() {
+			return;
+		}
+		/* (non-Javadoc)
+		 * @see org.osgi.framework.ServiceListener#serviceChanged(org.osgi.framework.ServiceEvent)
+		 */
+		@Override
+		public void serviceChanged(ServiceEvent event) {
+			return;
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.Executor#shutdown()
+		 */
+		@Override
+		public void shutdown() {
+			return;
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.Executor#isShutdown()
+		 */
+		@Override
+		public boolean isShutdown() {
+			return source.isShutdown();
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.Executor#isTerminated()
+		 */
+		@Override
+		public boolean isTerminated() {
+			return source.isTerminated();
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.Executor#execute(java.lang.Runnable, java.lang.Object)
+		 */
+		@Override
+		public <T> Future<T> execute(Runnable task, T result) {
+			return null;
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.Executor#execute(java.lang.Runnable)
+		 */
+		@Override
+		public void execute(Runnable task) {
+			return;
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.Executor#invokeAll(java.util.Collection)
+		 */
+		@Override
+		public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks)
+				throws InterruptedException {
+			return null;
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.Executor#invokeAll(java.util.Collection, long, java.util.concurrent.TimeUnit)
+		 */
+		@Override
+		public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout,
+				TimeUnit unit) throws InterruptedException {
+			return null;
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.Executor#invokeAny(java.util.Collection)
+		 */
+		@Override
+		public <T> T invokeAny(Collection<? extends Callable<T>> tasks)
+				throws InterruptedException, ExecutionException {
+			return null;
+		}
+		/* (non-Javadoc)
+		 * @see org.xmlrobot.genesis.Executor#invokeAny(java.util.Collection, long, java.util.concurrent.TimeUnit)
+		 */
+		@Override
+		public <T> T invokeAny(Collection<? extends Callable<T>> tasks,
+				long timeout, TimeUnit unit) throws InterruptedException,
+				ExecutionException, TimeoutException {
+			return null;
+		}
+		/* (non-Javadoc)
+		 * @see java.lang.Runnable#run()
+		 */
+		@Override
+		public void run() {
+			return;
+		}
+		/* (non-Javadoc)
+		 * @see java.util.concurrent.ThreadFactory#newThread(java.lang.Runnable)
+		 */
+		@Override
+		public Thread newThread(Runnable r) {
+			return source.newThread(r);
 		}
 	}
 }
