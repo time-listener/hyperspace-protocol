@@ -48,8 +48,7 @@ public abstract class Hyperspace
 	@Override
 	@XmlTransient
 	public ServiceRegistration<?> getHost() {
-		
-		return message.getAndGet(HOST);
+		return message.getHost();
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.MassListener#command()
@@ -57,10 +56,14 @@ public abstract class Hyperspace
 	@Override
 	@XmlElement
 	public Command getCommand() {
-		
 		return message.getCommand();
 	}
-	
+	/**
+	 * @return
+	 */
+	public boolean isRegistered() {
+		return getHost() != null;
+	}
     /**
      * Hyperspace default class constructor.
      */
@@ -109,7 +112,7 @@ public abstract class Hyperspace
 			ServiceRegistration<?> host = 
 					context.registerService(TimeListener.class, this, message);
 			// finally, save entity's registration object.
-			message.set(HOST, host);
+			message.put(HOST, host);
 		} 
 	}
 	/* (non-Javadoc)
@@ -124,23 +127,20 @@ public abstract class Hyperspace
 		}
 		else {
 			super.stop(context);
-			// declare host
-			ServiceRegistration<?> host;
 			// assign and check
-			if((host = getHost()) != null)
+			if(isRegistered())
 				// auto-execution
-				host.unregister();
+				getHost().unregister();
+				// nullify host
+				message.put(HOST, null);
 		}
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.MassListener#update()
 	 */
 	public void update() {
-		// declare host
-		ServiceRegistration<?> host;
-		// the hyperspace host
-		if((host = getHost()) != null)
-			host.setProperties(message);
+		if(isRegistered())
+			getHost().setProperties(message);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.MassListener#push(org.xmlrobot.util.Command)

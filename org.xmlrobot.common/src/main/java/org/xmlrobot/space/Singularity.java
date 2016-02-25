@@ -196,37 +196,7 @@ public abstract class Singularity<K,V>
 			return;	
 		}
 	}
-	/**
-	 * Key {@link Iterator} implementation class.
-	 * @author joan
-	 */
-	protected class KeyIterator
-		extends InheritanceIterator
-			implements Iterator<K> {
 
-		/**
-		 * @param entity
-		 */
-		public KeyIterator(Mass<K,V> entity) {
-			super(entity);
-		}
-		
-		/* (non-Javadoc)
-		 * @see java.util.Iterator#next()
-		 */
-		@Override
-		public K next() {
-			return getGen().equals(Parity.XY) ? 
-					backward().getKey() : forward().getKey();
-		}
-		/* (non-Javadoc)
-		 * @see org.xmlrobot.time.Metaphysical.InheritanceIterator#remove()
-		 */
-		@Override
-		public void remove() {
-			return;		
-		}
-	}
 	/**
 	 * Value {@link Iterator} implementation class.
 	 * @author joan

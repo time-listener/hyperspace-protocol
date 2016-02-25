@@ -9,7 +9,6 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.xmlrobot.genesis.TimeListener;
 import org.xmlrobot.horizon.Tachyon;
-import org.xmlrobot.util.Abort;
 import org.xmlrobot.util.Parity;
 
 /**
@@ -53,7 +52,7 @@ public abstract class Recursion
 	@Override
 	public V get(long timeout, TimeUnit unit) {
 		
-		return message.get();
+		return message.get(timeout, unit);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Phaser#set(java.lang.Object)
@@ -117,22 +116,29 @@ public abstract class Recursion
 	 */
 	@Override
 	public int reproduceTo(V o) {
-	
-		return matrix().reproduce(o.get(), get());
+		// call hypergenesis computation
+		int cmp = get().matrix().reproduce(o, call());
+		// push hypergenesis computation result
+		push(new Tachyon<K,V>(get().output()) {
+			/**
+			 * -774065207234124662L
+			 */
+			private static final long serialVersionUID = -774065207234124662L;
+		});
+		return cmp;
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Reproducible#output()
 	 */
 	@Override
 	public V output() {
-	
 		return matrix().get();
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Deflector#pulse(org.xmlrobot.genesis.Mass, org.xmlrobot.horizon.Graviton)
 	 */
 	@Override
-	public <X extends TimeListener<X,Y>, Y extends TimeListener<Y,X>> 
+	public synchronized <X extends TimeListener<X,Y>, Y extends TimeListener<Y,X>> 
 	void pulse(TimeListener<?,?> sender, Tachyon<Y,X> event) {
 		// call ancestral method
 		super.pulse(sender, event);
@@ -144,43 +150,46 @@ public abstract class Recursion
 			 * message transmission to wonderland through
 			 * hypergenesis comparison computation.
 			 * */
-			get().reproduceTo(getType().cast(event.get()));
+			reproduceTo(getAntitype().cast(event.getSource()));
 		}
 		// retrieve child and check existence
 		else if((child = event.getChild()) != null) {
 			// check genetic compatibility
 			if(child.getType().equals(getAntitype())) {
 				// reproduce yourselves by doing sex now
-				get().reproduceTo(getType().cast(child.get()));
+				reproduceTo(getAntitype().cast(child));
 			}
 		}
-		else throw new Abort(this); // something was wrong
+		else return; // something was wrong
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.Hypergenesis#echo(org.xmlrobot.genesis.TimeListener, org.xmlrobot.horizon.Takion)
 	 */
 	@Override
-	public <X extends TimeListener<X,Y>,Y extends TimeListener<Y,X>> 
+	public synchronized <X extends TimeListener<X,Y>,Y extends TimeListener<Y,X>> 
 	void echo(TimeListener<?,?> sender, Tachyon<X,Y> event) {
 		// ancestral recall
 		super.echo(sender, event);
+		// declare child
+		X child;
 		// check event compatibility
-		if (event.getType().equals(getAntitype())) {
-			// declare computation result
-			Y proto;
-			// assign and check
-			if((proto = event.getType().cast(output()).output()) != null) {
-				// push takion to the past
-				push(new Tachyon<Y,X>(proto) {
-					/**
-					 * 304776981697561141L
-					 */
-					private static final long serialVersionUID = 304776981697561141L;
-				});
+		if(event.getType().equals(getAntitype())) {
+			/* 
+			 * message transmission to wonderland through
+			 * hypergenesis comparison computation.
+			 * */
+			reproduceTo(getAntitype().cast(event.getSource()));
+		}
+		// retrieve child and check existence
+		else if((child = event.getChild()) != null) {
+			// check genetic compatibility
+			if(child.getType().equals(getAntitype())) {
+				// reproduce yourselves by doing sex now
+				reproduceTo(getAntitype().cast(child));
 			}
 		}
+		else return; // nothing to compare
 	}
-
 
  	/**
 	 * The Grid. A digital frontier. 

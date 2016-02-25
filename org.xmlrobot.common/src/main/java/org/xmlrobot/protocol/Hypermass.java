@@ -35,14 +35,13 @@ public class Hypermass<K,V>
 	@Override
 	@XmlTransient
 	public K getKey() {
-		K key = getAndGet(Mass.KEY);
-		return key;
+		return getAndCast(Mass.KEY);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Mass#setKey(java.lang.Object)
 	 */
 	public K setKey(K key) {
-		return getAndSet(Mass.KEY, key);
+		return putAndCast(Mass.KEY, key);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Mass#getValue()
@@ -50,14 +49,14 @@ public class Hypermass<K,V>
 	@Override
 	@XmlTransient
 	public V getValue() {
-		return getAndGet(Mass.VALUE);
+		return getAndCast(Mass.VALUE);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Mass#setValue(java.lang.Object)
 	 */
 	@Override
 	public V setValue(V value) {
-		return getAndSet(Mass.VALUE, value);
+		return putAndCast(Mass.VALUE, value);
 	}
 	/**
 	 * {@link Hypermass} default class constructor.
@@ -65,8 +64,10 @@ public class Hypermass<K,V>
 	 */
 	public Hypermass() {
 		super();
-		// this is the mass listener
-		initializeListener(this);
+		// inherit dna
+		map = this;
+		// update dna reference
+		put(DNA, this);
 	}
 	/**
 	 * {@link Hypermass} meta-constructor.
@@ -76,6 +77,8 @@ public class Hypermass<K,V>
 		super(mass);
 		if(!(mass instanceof Hyperbody))
 			throw new Abort();
+		// update dna reference
+		put(DNA, this);
 	}
 	/**
 	 * {@link Hypermass} meta-constructor.
@@ -83,25 +86,12 @@ public class Hypermass<K,V>
 	 */
 	public Hypermass(TimeListener<Mass<K,V>,Mass<V,K>> mass, K key, V value) {
 		this(mass);
-		// start mass listener initialization
-		initializeListener((Hyperbody<Mass<K,V>,Mass<V,K>>) mass);
-		// inherit key
-		set(Mass.KEY, key);
-		// inherit value
-		set(Mass.VALUE, value);
-	}
-	/**
-	 * Initializes the mass listener
-	 * @param mass the inherited mass
-	 */
-	private void initializeListener(Hyperbody<Mass<K,V>, Mass<V,K>> mass) {
 		// update dna reference
-		mass.set(DNA, this);
-		
-		mass.<K>declare(Mass.KEY);
-		mass.<V>declare(Mass.VALUE);
-		// inherit dna
-		this.map = mass;
+		put(DNA, this);
+		// inherit key
+		put(Mass.KEY, key);
+		// inherit value
+		put(Mass.VALUE, value);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.protocol.Hyperbody#clone()

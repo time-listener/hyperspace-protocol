@@ -61,7 +61,6 @@ public abstract class Attraction<K,V>
 	protected Attraction(Class<? extends Mass<K,V>> type, K key, V value, Parity gen) {
 		super(type, key, value, gen);
 	}
-
 	/**
 	 * Attraction class constructor.
 	 * @param type the inherited type
@@ -97,9 +96,10 @@ public abstract class Attraction<K,V>
 		super(type, antitype, key, value, parent);
 	}
 
-    /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#containsPositive(java.lang.Object)
-     */
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.Mass#containsKey(java.lang.Object)
+	 */
+	@Override
 	public boolean containsKey(K key) {
 		if(key.equals(getKey())) {
 			return true;
@@ -111,22 +111,15 @@ public abstract class Attraction<K,V>
 			return false;
 		}
     }
-    /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#containsNegative(java.lang.Object)
-     */
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.Mass#containsValue(java.lang.Object)
+	 */
+	@Override
     public boolean containsValue(V value) {
-    	if(value.equals(getValue())) {
-			return true;
-		}
-		else if(!isEmpty()) {
-			return getChild().containsValue(value);
-		}
-		else {
-			return false;
-		}
+    	return get().containsKey(value);
     }
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.TimeListener#collectKeys(java.util.Set)
+	 * @see org.xmlrobot.genesis.Mass#collectKeys(org.xmlrobot.genesis.Congregation)
 	 */
 	@Override
 	public Congregation<K> collectKeys(Congregation<K> keys) {
@@ -143,24 +136,16 @@ public abstract class Attraction<K,V>
 		}
 	}
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.TimeListener#collectValues(java.util.Collection)
+	 * @see org.xmlrobot.genesis.Mass#collectValues(org.xmlrobot.genesis.Congregation)
 	 */
 	@Override
 	public Congregation<V> collectValues(Congregation<V> values) {
-		// add key to congregation
-		values.add(getValue());
-		// check if we are the future
-		if (!isEmpty()) {
-			// follow collecting
-			return getChild().collectValues(values);
-		} else {
-			// turn back result
-			return values;
-		}
+		return get().collectKeys(values);
 	}
-    /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#forEachPositive(java.util.function.BiConsumer)
-     */
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.Mass#forEachKey(java.util.function.BiConsumer)
+	 */
+	@Override
     public void forEachKey(BiConsumer<? super K,? super V> action) {
     	Objects.requireNonNull(action);
         for (Mass<K,V> child : this) {
@@ -176,22 +161,11 @@ public abstract class Attraction<K,V>
             action.accept(k, v);
         }
     }
-    /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#forEachNegative(java.util.function.BiConsumer)
-     */
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.Mass#forEachValue(java.util.function.BiConsumer)
+	 */
+	@Override
     public void forEachValue(BiConsumer<? super V, ? super K> action) {
-    	Objects.requireNonNull(action);
-        for (Mass<K,V> child : this) {
-    		K k;
-    		V v;
-            try {
-                k = child.getKey();
-                v = child.getValue();
-            } catch(IllegalStateException ise) {
-                // this usually means the entry is no longer in the map.
-                throw new ConcurrentModificationException(ise);
-            }
-            action.accept(v, k);
-    	}
+    	get().forEachKey(action);
     }
 }

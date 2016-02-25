@@ -13,8 +13,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
-
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -38,7 +36,7 @@ import org.xmlrobot.util.Parity;
  */
 @XmlRootElement
 public class Hyperhead
-	extends Dictionary<String,AtomicReference<?>> 
+	extends Dictionary<String,Object> 
 		implements MassListener {
 
 	/**
@@ -49,7 +47,7 @@ public class Hyperhead
 	/**
 	 * The backing data
 	 */
-	Dictionary<String,AtomicReference<?>> map;
+	Dictionary<String,Object> map;
 	
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Entity#family()
@@ -57,8 +55,7 @@ public class Hyperhead
 	@Override
 	@XmlTransient
 	public ThreadGroup getFamily() {
-
-		return getAndGet(FAMILY);
+		return getAndCast(FAMILY);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Entity#host()
@@ -66,15 +63,13 @@ public class Hyperhead
 	@Override
 	@XmlTransient
 	public ServiceRegistration<?> getHost() {
-
-		return getAndGet(HOST);
+		return getAndCast(HOST);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Entity#name()
 	 */
 	@Override
 	public String getName() {
-
 		return null;
 	}
 	/* (non-Javadoc)
@@ -82,23 +77,21 @@ public class Hyperhead
 	 */
 	@Override
 	public Parity getGen() {
-
-		return getAndGet(PARITY);
+		return getAndCast(PARITY);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.MassListener#setGen(org.xmlrobot.util.Parity)
 	 */
 	@Override
 	public void setGen(Parity value) {
-		set(PARITY, value);
+		put(PARITY, value);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.MassListener#dna()
 	 */
 	@Override
 	public MassListener dna() {
-
-		return getAndGet(DNA);
+		return getAndCast(DNA);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Entity#runner()
@@ -106,8 +99,7 @@ public class Hyperhead
 	@Override
 	@XmlTransient
 	public Thread getRunner() {
-		
-		return getAndGet(RUNNER);
+		return getAndCast(RUNNER);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Mass#getCommand()
@@ -115,8 +107,7 @@ public class Hyperhead
 	@Override
 	@XmlElement
 	public Command getCommand() {
-		
-		return getAndGet(COMMAND);
+		return getAndCast(COMMAND);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.MassListener#getContext()
@@ -124,32 +115,28 @@ public class Hyperhead
 	@Override
 	@XmlTransient
 	public BundleContext getContext() {
-		
-		return getAndGet(CONTEXT);
+		return getAndCast(CONTEXT);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Mass#setCommand(org.xmlrobot.util.Command)
 	 */
 	@Override
 	public void push(Command value) {
-		
-		set(COMMAND, value);
+		put(COMMAND, value);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.MassListener#start(org.osgi.framework.BundleContext)
 	 */
 	@Override
 	public void start(BundleContext context) {
-		
-		set(CONTEXT, context);
+		put(CONTEXT, context);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.MassListener#stop(org.osgi.framework.BundleContext)
 	 */
 	@Override
 	public void stop(BundleContext context) {
-		
-		set(CONTEXT, null);
+		put(CONTEXT, null);
 	}
 	
 	/**
@@ -157,10 +144,13 @@ public class Hyperhead
 	 */
 	public Hyperhead() {
 		// create time-traveler message properties
-		map = new Hashtable<String,AtomicReference<?>>();
+		map = new Hashtable<String,Object>();
 		// inherit dna
-		set(TimeListener.DNA, this);
+		put(TimeListener.DNA, this);
 	}
+	/**
+	 * @param head
+	 */
 	public Hyperhead(MassListener head) {
 		if(head == null ? true : !(head instanceof Hyperhead))
 			throw new Abort();
@@ -184,33 +174,14 @@ public class Hyperhead
 	 * @see java.util.Dictionary#elements()
 	 */
 	@Override
-	public Enumeration<AtomicReference<?>> elements() {
-		
+	public Enumeration<Object> elements() {
 		return map.elements();
-	}
-	/**
-	 * Declares a reference in the hyperdictionary.
-	 * @param key the key reference
-	 * @return not null if key was previously declared.
-	 */
-	public <X> Object declare(String key){
-		return put(key, new AtomicReference<X>());
-	}
-	/**
-	 * Declares and sets a reference in the hyperdictionary.
-	 * @param key the key reference
-	 * @param value the value reference
-	 * @return the declared reference
-	 * @return not null if key was previously declared.
-	 */
-	public <X> Object declareAndSet(String key, X value){
-		return put(key, new AtomicReference<X>(value));
 	}
 	/* (non-Javadoc)
 	 * @see java.util.Dictionary#get(java.lang.Object)
 	 */
 	@Override
-	public AtomicReference<?> get(Object key) {
+	public Object get(Object key) {
 		return map.get(key);
 	}
 	/**
@@ -219,41 +190,20 @@ public class Hyperhead
 	 * @return the hyperdictionary reference with the specified key
 	 */
 	@SuppressWarnings("unchecked")
-	public <X> AtomicReference<X> getAndCast(String key) {
+	public <X> X getAndCast(String key) {
 		try {
-			return (AtomicReference<X>) get(key);
+			return (X) get(key);
 		}
 		catch(ClassCastException | NullPointerException unused) {
 			return null;	
 		}
 	}
-	/**
-	 * Returns the hyperdictionary reference value with the specified key. 
-	 * @param key
-	 * @return
-	 */
-	public <X> X getAndGet(String key) {
-		try {
-			return this.<X>getAndCast(key).get();	
-		}
-		catch(ClassCastException | NullPointerException unused) {
-			return null;
-		}
-	}
-	/**
-	 * @param key
-	 * @param value
-	 * @return
-	 */
-	public <X> X getAndSet(String key, X value) {
-		try {
-			return this.<X>getAndCast(key).getAndSet(value);
-		}
-		catch(ClassCastException | NullPointerException unused) {
-			return null;
-		}
-	}
 	
+	@SuppressWarnings("unchecked")
+	public <X> X putAndCast(String key, X value) {
+		Object o;
+		return (o = put(key, value)) != null ? (X) o : null;
+	}
 	/**
 	 * @param key
 	 * @param oldValue
@@ -261,50 +211,34 @@ public class Hyperhead
 	 * @return
 	 */
 	public <X> boolean compareAndSet(String key, X oldValue, X newValue) {
-		try {
-			return getAndCast(key).compareAndSet(oldValue, newValue);
+		
+		if(get(key) == oldValue) {
+			put(key, newValue);
+			return true;
 		}
-		catch(ClassCastException | NullPointerException unused) {
-			
-			return false;
-		}
+		else return false;
 	}
 	/* (non-Javadoc)
 	 * @see java.util.Dictionary#isEmpty()
 	 */
 	@Override
 	public boolean isEmpty() {
-
 		return map.isEmpty();
 	}
 	/* (non-Javadoc)
 	 * @see java.util.Dictionary#put(java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public AtomicReference<?> put(String key, AtomicReference<?> value) {
-		return map.put(key, value);
-	}
-	/**
-	 * @param key
-	 * @param value
-	 * @return
-	 */
-	public <X> void set(String key, X value) {
-		// get reference
-		AtomicReference<X> ref = getAndCast(key);
-		// check existence
-		if(ref != null)
-			// set new value
-			ref.set(value);
-		// create it
-		else declareAndSet(key, value);
+	public Object put(String key, Object value) {
+		if(value != null)
+			return map.put(key, value);
+		else return map.remove(key);
 	}
 	/* (non-Javadoc)
 	 * @see java.util.Dictionary#remove(java.lang.Object)
 	 */
 	@Override
-	public AtomicReference<?> remove(Object key) {
-
+	public Object remove(Object key) {
 		return map.remove(key);
 	}
 	/* (non-Javadoc)
@@ -312,7 +246,6 @@ public class Hyperhead
 	 */
 	@Override
 	public int size() {
-
 		return map.size();
 	}
 	/* (non-Javadoc)
@@ -320,7 +253,6 @@ public class Hyperhead
 	 */
 	@Override
 	public Enumeration<String> keys() {
-		
 		return map.keys();
 	}
 	/* (non-Javadoc)
@@ -365,7 +297,7 @@ public class Hyperhead
 	@Override
 	public void run() {
 		// inherit family
-		set(FAMILY, Thread.currentThread().getThreadGroup());
+		put(FAMILY, Thread.currentThread().getThreadGroup());
 	}
 	/* (non-Javadoc)
 	 * @see java.util.concurrent.ThreadFactory#newThread(java.lang.Runnable)
@@ -386,7 +318,6 @@ public class Hyperhead
 	 */
 	@Override
 	public boolean isShutdown() {
-
 		return false;
 	}
 	/* (non-Javadoc)
@@ -394,7 +325,6 @@ public class Hyperhead
 	 */
 	@Override
 	public boolean isTerminated() {
-
 		return false;
 	}
 	/* (non-Javadoc)
@@ -402,7 +332,6 @@ public class Hyperhead
 	 */
 	@Override
 	public <T> Future<T> execute(Runnable task, T result) {
-
 		return null;
 	}
 	/* (non-Javadoc)
@@ -411,7 +340,6 @@ public class Hyperhead
 	@Override
 	public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks)
 			throws InterruptedException {
-
 		return null;
 	}
 	/* (non-Javadoc)
@@ -421,7 +349,6 @@ public class Hyperhead
 	public <T> List<Future<T>> invokeAll(
 			Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
 			throws InterruptedException {
-
 		return null;
 	}
 	/* (non-Javadoc)

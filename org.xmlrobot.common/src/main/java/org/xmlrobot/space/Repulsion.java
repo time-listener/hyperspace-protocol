@@ -120,9 +120,11 @@ public abstract class Repulsion<K,V>
 			K key, V value, Parity parity) {
 		super(type, antitype, key, value, parity);
 	}
-    /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#replaceNegative(java.lang.Object, java.lang.Object, java.lang.Object)
-     */
+
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.Mass#replaceValue(java.lang.Object, java.lang.Object, java.lang.Object)
+	 */
+	@Override
     public boolean replaceValue(K key, V oldValue, V newValue) {
 
     	if(key.equals(getKey())) {
@@ -135,25 +137,17 @@ public abstract class Repulsion<K,V>
     		return false;
     	}
     }
-    /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#replacePositive(java.lang.Object, java.lang.Object, java.lang.Object)
-     */
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.Mass#replaceKey(java.lang.Object, java.lang.Object, java.lang.Object)
+	 */
+	@Override
     public boolean replaceKey(V value, K oldKey, K newKey) {
-    	
-    	if(value.equals(getValue())) {
-    		return message.compareAndSet(Mass.KEY, oldKey, newKey);
-    	}
-    	else if(!isEmpty()) {
-    		return getChild().replaceKey(value, oldKey, newKey);
-    	}
-    	else {
-    		return false;
-    	}
+    	return get().replaceValue(value, oldKey, newKey);
     }
-
-    /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#replaceAllNegative(java.util.function.BiFunction)
-     */
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.Mass#replaceAllValues(java.util.function.BiFunction)
+	 */
+	@Override
     public void replaceAllValues(BiFunction<? super K, ? super V, ? extends V> function) {
     	Objects.requireNonNull(function);
         for (Mass<K,V> entry : this) {
@@ -178,40 +172,21 @@ public abstract class Repulsion<K,V>
             }
         }
     }
-    /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#replaceAllPositive(java.util.function.BiFunction)
-     */
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.Mass#replaceAllKeys(java.util.function.BiFunction)
+	 */
+	@Override
     public void replaceAllKeys(BiFunction<? super V, ? super K, ? extends K> function) {
-    	Objects.requireNonNull(function);
-        for (Mass<K,V> entry : this) {
-            K k;
-            V v;
-            try {
-                k = entry.getKey();
-                v = entry.getValue();
-            } catch(IllegalStateException ise) {
-                // this usually means the entry is no longer in the map.
-                throw new ConcurrentModificationException(ise);
-            }
-
-            // ise thrown from function is not a cme.
-            k = function.apply(v, k);
-
-            try {
-                entry.setKey(k);
-            } catch(IllegalStateException ise) {
-                // this usually means the entry is no longer in the map.
-                throw new ConcurrentModificationException(ise);
-            }
-        }
+    	get().replaceAllValues(function);
     }
-    /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#replaceNegative(java.lang.Object, java.lang.Object)
-     */
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.Mass#replaceValue(java.lang.Object, java.lang.Object)
+	 */
+	@Override
     public V replaceValue(K key, V value) {
     	
     	if(key.equals(getKey())) {
-    		return message.getAndSet(Mass.VALUE, value);
+    		return message.putAndCast(Mass.VALUE, value);
     	}
     	else if(!isEmpty()) {
     		return getChild().replaceValue(key, value);
@@ -220,19 +195,11 @@ public abstract class Repulsion<K,V>
     		return null;
     	}
     }
-    /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#replacePositive(java.lang.Object, java.lang.Object)
-     */
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.Mass#replaceKey(java.lang.Object, java.lang.Object)
+	 */
+	@Override
     public K replaceKey(V value, K key) {
-
-    	if(value.equals(getValue())) {
-    		return message.getAndSet(Mass.KEY, key);
-    	}
-    	else if(!isEmpty()) {
-    		return getChild().replaceKey(value, key);
-    	}
-    	else {
-    		return null;
-    	}
+    	return get().replaceValue(value, key);
     }
 }

@@ -109,10 +109,10 @@ public abstract class Dilatation<K,V>
 			K key, V value, Mass<K,V> parent) {
 		super(type, antitype, key, value, parent);
 	}
-	
     /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#mergeNegative(java.lang.Object, java.lang.Object, java.util.function.BiFunction)
+     * @see org.xmlrobot.genesis.Mass#merge(java.lang.Object, java.lang.Object, java.util.function.BiFunction)
      */
+	@Override
     public V merge(K key, V value,
             BiFunction<? super V,? super V,? extends V> remappingFunction) {
     	
@@ -130,28 +130,18 @@ public abstract class Dilatation<K,V>
         return newValue;
     }
     /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#mergePositive(java.lang.Object, java.lang.Object, java.util.function.BiFunction)
+     * @see org.xmlrobot.genesis.Mass#mergeInverted(java.lang.Object, java.lang.Object, java.util.function.BiFunction)
      */
+	@Override
     public K mergeInverted(V value, K key,
             BiFunction<? super K,? super K,? extends K> remappingFunction) {
-        Objects.requireNonNull(remappingFunction);
-        Objects.requireNonNull(value);
-        K oldKey = getKey(value);
-        K newKey = (oldKey == null) ? key :
-                   remappingFunction.apply(oldKey, key);
-        if(newKey == null) {
-            remove(value);
-        } 
-        else {
-            putKey(value, newKey);
-        }
-        return newKey;
+        return get().merge(value, key, remappingFunction);
     }
     /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#removeNegative(java.lang.Object)
+     * @see org.xmlrobot.genesis.Mass#removeByKey(java.lang.Object)
      */
+	@Override
     public Mass<K,V> removeByKey(K key) {
-
     	if(key.equals(getKey())) {
     		remove();
     		return call(); //a.k.a getType().cast(this)
@@ -165,24 +155,16 @@ public abstract class Dilatation<K,V>
     	}
     }
     /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#removePositive(java.lang.Object)
+     * @see org.xmlrobot.genesis.Mass#removeByValue(java.lang.Object)
      */
+	@Override
     public Mass<V,K> removeByValue(V value) {
-
-    	if(value.equals(getValue())) {
-    		remove();
-    		return get(); //a.k.a getType().cast(this)
-    	}
-    	else if(!isEmpty()) {
-    		return getChild().removeByValue(value);
-    	}
-    	else {
-        	return null;
-    	}
+    	return get().removeByKey(value);
     }
     /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#removeNegative(java.lang.Object, java.lang.Object)
+     * @see org.xmlrobot.genesis.Mass#removeByKey(java.lang.Object, java.lang.Object)
      */
+	@Override
     public boolean removeByKey(K key, V value) {
     	
     	if(key.equals(getKey())) {
@@ -202,24 +184,10 @@ public abstract class Dilatation<K,V>
     	}
     }
     /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#removeByValue(java.lang.Object, java.lang.Object)
+     * @see org.xmlrobot.genesis.Mass#removeByValue(java.lang.Object, java.lang.Object)
      */
+	@Override
     public boolean removeByValue(V value, K key) {
-    	
-    	if(value.equals(getValue())) {
-    		if(key.equals(getKey())) {
-    			remove();
-    			return true;
-    		}
-    		else {
-    			return false;
-    		}
-    	}
-    	else if(!isEmpty()) {
-    		return getChild().removeByValue(value, key);
-    	}
-    	else {
-        	return false;
-    	}
+    	return get().removeByKey(value, key);
     }
 }

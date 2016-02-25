@@ -49,28 +49,36 @@ public class Hyperbody
 	 */
 	@Override
 	public V get() {
-		return getAndGet(VALUE);
+		return getAndCast(VALUE);
+	}
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.Phaser#get(long, java.util.concurrent.TimeUnit)
+	 */
+	@Override
+	public V get(long timeout, TimeUnit unit) {
+
+		return getAndCast(VALUE);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Phaser#set(java.lang.Object)
 	 */
 	@Override
 	public void set(V value) {
-		set(VALUE, value);
+		put(VALUE, value);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.PastCallable#call()
 	 */
 	@Override
 	public K call() {
-		return getAndGet(KEY);
+		return getAndCast(KEY);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Mass#dna()
 	 */
 	@Override
 	public TimeListener<K,V> dna() {
-		return getAndGet(DNA);
+		return getAndCast(DNA);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Mass#getGen()
@@ -78,14 +86,14 @@ public class Hyperbody
 	@Override
 	@XmlElement
 	public Parity getGen() {
-		return getAndGet(PARITY);
+		return getAndCast(PARITY);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Mass#setGen(org.xmlrobot.util.Parity)
 	 */
 	@Override
 	public void setGen(Parity gene) {
-		set(PARITY, gene);
+		put(PARITY, gene);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Mass#getType()
@@ -93,14 +101,14 @@ public class Hyperbody
 	@Override
 	@XmlElement
 	public Class<K> getType() {
-		return getAndGet(TYPE);
+		return getAndCast(TYPE);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Mass#setType(java.lang.Class)
 	 */
 	@Override
 	public void setType(Class<? extends K> type) {
-		set(TYPE, type);
+		put(TYPE, type);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Mass#getAntitype()
@@ -108,14 +116,14 @@ public class Hyperbody
 	@Override
 	@XmlElement
 	public Class<? extends V> getAntitype() {
-		return getAndGet(ANTITYPE);
+		return getAndCast(ANTITYPE);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Mass#setAntitype(java.lang.Class)
 	 */
 	@Override
 	public void setAntitype(Class<? extends V> value) {
-		set(ANTITYPE, value);
+		put(ANTITYPE, value);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Congregation#getChild()
@@ -123,14 +131,14 @@ public class Hyperbody
 	@Override
 	@XmlTransient
 	public K getChild() {
-		return getAndGet(CHILD);
+		return getAndCast(CHILD);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Congregation#setChild(java.lang.Object)
 	 */
 	@Override
 	public void setChild(K listener) {
-		set(CHILD, listener);
+		put(CHILD, listener);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Congregation#getParent()
@@ -138,14 +146,14 @@ public class Hyperbody
 	@Override
 	@XmlTransient
 	public K getParent() {
-		return getAndGet(PARENT);
+		return getAndCast(PARENT);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Congregation#setParent(java.lang.Object)
 	 */
 	@Override
 	public void setParent(K listener) {
-		set(PARENT, listener);
+		put(PARENT, listener);
 	}
 
 	/* (non-Javadoc)
@@ -153,28 +161,28 @@ public class Hyperbody
 	 */
 	@Override
 	public K getRoot() {
-		return getAndGet(ROOT);
+		return getAndCast(ROOT);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.TimeListener#setRoot(java.lang.Object)
 	 */
 	@Override
 	public void setRoot(K root) {
-		set(ROOT, root);
+		put(ROOT, root);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.TimeListener#getStem()
 	 */
 	@Override
 	public V getStem() {
-		return getAndGet(STEM);
+		return getAndCast(STEM);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.TimeListener#setStem(java.lang.Object)
 	 */
 	@Override
 	public void setStem(V stem) {
-		set(STEM, stem);
+		put(STEM, stem);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.protocol.Hyperhead#getName()
@@ -197,10 +205,12 @@ public class Hyperbody
 	 */
 	public Hyperbody(Parity parity) {
 		this(new Hyperhead());
-		// start dna initialization
-		initializeDna((Hyperhead) map);
+		// inherit default startup command
+		put(COMMAND, Command.GENESIS);
+		// update dna reference
+		put(DNA, this);
 		// inherit parity
-		set(PARITY, parity);
+		put(PARITY, parity);
 	}
 	/**
 	 * {@link Hyperbody} class constructor.
@@ -208,9 +218,9 @@ public class Hyperbody
 	public Hyperbody(Class<? extends K> type, K key, Parity parity) {
 		this(parity);
 		// inherit key
-		set(KEY, key);
+		put(KEY, key);
 		// inherit type
-		set(TYPE, type);
+		put(TYPE, type);
 	}
 	/**
 	 * {@link Hyperbody} class constructor.
@@ -218,9 +228,9 @@ public class Hyperbody
 	public Hyperbody(Class<? extends K> type, K key, V value, Parity parity) {
 		this(type, key, parity);
 		// inherit value
-		set(VALUE, value);
+		put(VALUE, value);
 		// inherit antitype
-		set(ANTITYPE, value.getType());
+		put(ANTITYPE, value.getType());
 	}
 	/**
 	 * @param map
@@ -230,23 +240,6 @@ public class Hyperbody
 		super(map);
 	}
 	
-	/**
-	 * @param parity
-	 */
-	private void initializeDna(Hyperhead map) {
-		// inherit default startup command
-		map.set(COMMAND, Command.GENESIS);
-		// update dna reference
-		map.set(DNA, this);
-		// declare child
-		map.<K>declare(CHILD);
-		// declare parent
-		map.<K>declare(PARENT);
-		// declare root
-		map.<K>declare(ROOT);
-		// declare root
-		map.<V>declare(STEM);
-	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#clone()
 	 */
@@ -610,14 +603,7 @@ public class Hyperbody
 		
 		call().clear();
 	}
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.Phaser#get(long, java.util.concurrent.TimeUnit)
-	 */
-	@Override
-	public V get(long timeout, TimeUnit unit) {
 
-		return call().get(timeout, unit);
-	}
 	/* (non-Javadoc)
 	 * @see java.util.Enumeration#hasMoreElements()
 	 */

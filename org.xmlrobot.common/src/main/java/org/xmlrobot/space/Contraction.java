@@ -97,15 +97,16 @@ public abstract class Contraction<K,V>
 		// call constructor
 		super(type, antitype, key, value, gen);
 	}
+	
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.TimeListener#putPositive(java.lang.Object, java.lang.Object)
+	 * @see org.xmlrobot.genesis.Mass#putValue(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	public V putValue(K key, V value) {
 
 		if(key.equals(getKey())) {
 			// update value and return old value
-			return message.getAndSet(Mass.VALUE, value);
+			return message.putAndCast(Mass.VALUE, value);
 		}
 		else if(!isEmpty()) {
 			// call recursion
@@ -119,30 +120,16 @@ public abstract class Contraction<K,V>
 		}
 	}
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.TimeListener#putPositive(java.lang.Object, java.lang.Object)
+	 * @see org.xmlrobot.genesis.Mass#putKey(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	public K putKey(V value, K key) {
-
-		if(value.equals(getValue())) {
-			// update value and return old value
-			return message.getAndSet(Mass.KEY, key);
-		}
-		else if(!isEmpty()) {
-			// call recursion
-			return getChild().putKey(value, key);
-		}
-		else {
-			// key is not in the chain: create it
-			instance(getType(), getAntitype(), 
-					key, value, getRoot()).push(Command.SEND);
-    		return null;
-		}
+		return get().putValue(value, key);
 	}
-
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.TimeListener#putIfAbsent(java.lang.Object, java.lang.Object)
+	 * @see org.xmlrobot.genesis.Mass#putValueIfAbsent(java.lang.Object, java.lang.Object)
 	 */
+	@Override
 	public V putValueIfAbsent(K key, V value) {
 		// retrieve value
         V v = getValue(key);
@@ -155,31 +142,26 @@ public abstract class Contraction<K,V>
         return v;
     }
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.TimeListener#putIfAbsent(java.lang.Object, java.lang.Object)
+	 * @see org.xmlrobot.genesis.Mass#putKeyIfAbsent(java.lang.Object, java.lang.Object)
 	 */
+	@Override
 	public K putKeyIfAbsent(V value, K key) {
-		// retrieve key
-        K k = getKey(value);
-        // check existence
-        if (k == null) {
-        	// update
-            k = putKey(value, key);
-        }
         // turn back
-        return k;
+        return get().putValueIfAbsent(value, key);
     }
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.TimeListener#putAll(org.xmlrobot.genesis.TimeListener)
+	 * @see org.xmlrobot.genesis.Mass#putAllValues(org.xmlrobot.genesis.Mass)
 	 */
+	@Override
 	public void putAllValues(Mass<? extends K,? extends V> m) {
         for (Mass<? extends K,? extends V> e : m)
             putValue(e.getKey(), e.getValue());
     }
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.TimeListener#putAllPositive(org.xmlrobot.genesis.TimeListener)
+	 * @see org.xmlrobot.genesis.Mass#putAllKeys(org.xmlrobot.genesis.Mass)
 	 */
+	@Override
 	public void putAllKeys(Mass<? extends V,? extends K> m) {		
-		for (Mass<? extends V,? extends K> e : m)
-            putKey(e.getKey(), e.getValue());
+		get().putAllValues(m);
 	}
 }

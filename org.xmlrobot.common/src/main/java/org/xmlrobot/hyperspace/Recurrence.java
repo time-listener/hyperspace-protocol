@@ -39,7 +39,7 @@ public abstract class Recurrence
 	/**
 	 * The mass listeners.
 	 */
-	private transient volatile LinkedHashSet<MassListener> massListeners;
+	LinkedHashSet<MassListener> massListeners;
 	
 	/**
      * {@link Recurrence} default class constructor.

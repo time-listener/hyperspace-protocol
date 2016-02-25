@@ -177,9 +177,19 @@ public abstract class Time
 	 * @see org.xmlrobot.hyperspace.Recursion#pulse(org.xmlrobot.genesis.TimeListener, org.xmlrobot.horizon.Takion)
 	 */
 	@Override
-	public <X extends TimeListener<X,Y>,Y extends TimeListener<Y,X>> 
+	public synchronized <X extends TimeListener<X,Y>,Y extends TimeListener<Y,X>> 
 		void pulse(TimeListener<?,?> sender, Tachyon<Y,X> event) {
 		super.pulse(sender, event);
+		// rotate-revolve dna-chain
+		event.spin();
+	}
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.hyperspace.Recursion#echo(org.xmlrobot.genesis.TimeListener, org.xmlrobot.horizon.Tachyon)
+	 */
+	@Override
+	public synchronized <X extends TimeListener<X, Y>, Y extends TimeListener<Y, X>> void echo(
+			TimeListener<?, ?> sender, Tachyon<X, Y> event) {
+		super.echo(sender, event);
 		// rotate-revolve dna-chain
 		event.spin();
 	}
@@ -232,9 +242,11 @@ public abstract class Time
 		 */
 		@Override
 		public void remove() {
-    		K child = current.getChild();
-    		current.remove();
-    		current = child;
+			if(current != null) {
+	    		K child = current.getChild();
+	    		current.remove();
+	    		current = child;
+			}
 		}
     }
     /**

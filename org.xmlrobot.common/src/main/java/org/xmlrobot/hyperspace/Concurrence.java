@@ -112,12 +112,7 @@ public abstract class Concurrence
 	 */
 	@Override
 	public boolean isCancelled() {
-		switch (getCommand()) {
-		case INTERRUPTED:
-			return true;
-		default:
-			return false;
-		}
+		return getCommand() == Command.INTERRUPTED;
 	}
 	/* (non-Javadoc)
 	 * @see java.util.concurrent.Future#isDone()

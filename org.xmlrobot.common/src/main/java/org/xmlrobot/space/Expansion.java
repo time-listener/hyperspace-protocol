@@ -123,10 +123,11 @@ public abstract class Expansion <K,V>
 			K key, V value, Mass<K,V> parent) {
 		super(type, antitype, key, value, parent);
 	}
-	
-    /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#computeIfAbsent(java.lang.Object, java.util.function.Function)
-     */
+
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.Mass#computeIfAbsent(java.lang.Object, java.util.function.Function)
+	 */
+	@Override
     public V computeIfAbsent(K key, 
     		Function<? super K,? extends V> mappingFunction) {
     	
@@ -141,25 +142,18 @@ public abstract class Expansion <K,V>
         }
         return v;
     }
-    /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#computePositiveIfAbsent(java.lang.Object, java.util.function.Function)
-     */
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.Mass#computeInvertedIfAbsent(java.lang.Object, java.util.function.Function)
+	 */
+	@Override
     public K computeInvertedIfAbsent(V value, 
     		Function<? super V,? extends K> mappingFunction) {
-    	Objects.requireNonNull(mappingFunction);
-        K k;
-        if ((k = getKey(value)) == null) {
-            K newKey;
-            if ((newKey = mappingFunction.apply(value)) != null) {
-        		putKey(value, newKey);	
-                return newKey;
-            }
-        }
-        return k;
+        return get().computeIfAbsent(value, mappingFunction);
     }
-    /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#compute(java.lang.Object, java.util.function.BiFunction)
-     */
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.Mass#compute(java.lang.Object, java.util.function.BiFunction)
+	 */
+	@Override
     public V compute(K key,
     		BiFunction<? super K,? super V,? extends V> remappingFunction) {
         Objects.requireNonNull(remappingFunction);
@@ -182,35 +176,18 @@ public abstract class Expansion <K,V>
             return newValue;
         }
     }
-    /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#computePositive(java.lang.Object, java.util.function.BiFunction)
-     */
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.Mass#computeInverted(java.lang.Object, java.util.function.BiFunction)
+	 */
+	@Override
     public K computeInverted(V value,
     		BiFunction<? super V, ? super K, ? extends K> remappingFunction) {
-    	Objects.requireNonNull(remappingFunction);
-        K oldKey = getKey(value);
-        K newKey = remappingFunction.apply(value, oldKey);
-        
-        if (newKey == null) {
-            // delete mapping
-            if (oldKey != null || containsValue(value)) {
-                // something to remove
-                remove(value);
-                return null;
-            } else {
-                // nothing to do. Leave things as they were.
-                return null;
-            }
-        } else {
-            // add or replace old mapping
-            putKey(value, newKey);
-            return newKey;
-        }
+    	return get().compute(value, remappingFunction);
     }
-
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.TimeListener#computeNegativeIfPresent(java.lang.Object, java.util.function.BiFunction)
+	 * @see org.xmlrobot.genesis.Mass#computeIfPresent(java.lang.Object, java.util.function.BiFunction)
 	 */
+	@Override
 	public V computeIfPresent(K key, 
 			BiFunction<? super K,? super V,? extends V> remappingFunction) {
 		Objects.requireNonNull(remappingFunction);
@@ -231,29 +208,13 @@ public abstract class Expansion <K,V>
         } else {
             return null;
         }
-    }	
+    }
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.TimeListener#computePositiveIfPresent(java.lang.Object, java.util.function.BiFunction)
+	 * @see org.xmlrobot.genesis.Mass#computeInvertedIfPresent(java.lang.Object, java.util.function.BiFunction)
 	 */
+	@Override
 	public K computeInvertedIfPresent(V value, 
 			BiFunction<? super V,? super K,? extends K> remappingFunction) {
-		Objects.requireNonNull(remappingFunction);
-        K oldKey;
-        if ((oldKey = getKey(value)) != null) {
-            K newKey = remappingFunction.apply(value, oldKey);
-            if (newKey != null) {
-                try {
-            		putKey(value, newKey);	
-				} catch (Abort e) {
-					e.printStackTrace();
-				}
-                return newKey;
-            } else {
-                remove(value);
-                return null;
-            }
-        } else {
-            return null;
-        }
+		return get().computeIfPresent(value, remappingFunction);
 	}
 }

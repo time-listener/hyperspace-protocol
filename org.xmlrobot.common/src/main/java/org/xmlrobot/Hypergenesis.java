@@ -55,7 +55,7 @@ public abstract class Hypergenesis
  	/**
  	 * Wonderland.
  	 */
- 	protected transient volatile TimeListener.Transmitter<K,V> matrix;
+ 	protected TimeListener.Transmitter<K,V> matrix;
 	
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.Hypergenesis#dna()
@@ -140,7 +140,7 @@ public abstract class Hypergenesis
 	 * @see org.xmlrobot.genesis.Deflector#pulse(org.xmlrobot.genesis.Entity, org.xmlrobot.horizon.Graviton)
 	 */
 	@Override
-	public <X extends TimeListener<X,Y>, Y extends TimeListener<Y,X>> 
+	public synchronized <X extends TimeListener<X,Y>, Y extends TimeListener<Y,X>> 
 	void pulse(TimeListener<?,?> sender, Tachyon<Y,X> event) {
 		// wonderland nullification
 		matrix = null;
@@ -149,29 +149,9 @@ public abstract class Hypergenesis
 	 * @see org.xmlrobot.genesis.Deflector#echo(org.xmlrobot.genesis.Entity, org.xmlrobot.horizon.Graviton)
 	 */
 	@Override
-	public <X extends TimeListener<X,Y>,Y extends TimeListener<Y,X>> 
+	public synchronized <X extends TimeListener<X,Y>,Y extends TimeListener<Y,X>> 
 		void echo(TimeListener<?,?> sender, Tachyon<X,Y> event) {
-		// declare child
-		X child;
-		// check event compatibility
-		if (event.getType().equals(getAntitype())) {
-			// get results
-			Y protoY = event.output();
-			X protoX = event.getType().cast(output());
-			// compare results
-			protoX.reproduceTo(protoY);
-		}
-		// retrieve child and check existence
-		else if ((child = event.getChild()) != null) {
-			// check genetic compatibility
-			if (child.getType().equals(getAntitype())) {
-				V o;
-				if((o = output()) != null){
-					// inject results
-					event.matrix().inject(child.getType().cast(o));
-				}
-			}
-		}
+		return;
 	}
 	/* (non-Javadoc)
 	 * @see java.lang.Runnable#run()
@@ -269,7 +249,6 @@ public abstract class Hypergenesis
 		 */
 		@Override
 		public void inject(K key) {
-
 			output.add(key.get());
 			output.get().add(key);
 		}
@@ -278,7 +257,6 @@ public abstract class Hypergenesis
 		 */
 		@Override
 		public void push(V value) {
-
 			output.add(value);
 			output.get().add(value.get());
 		}		

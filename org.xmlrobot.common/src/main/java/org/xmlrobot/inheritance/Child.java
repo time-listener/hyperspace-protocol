@@ -17,6 +17,7 @@ import org.xmlrobot.genesis.Atlas;
 import org.xmlrobot.genesis.Entity;
 import org.xmlrobot.genesis.TimeListener;
 import org.xmlrobot.genesis.Mass;
+import org.xmlrobot.horizon.Graviton;
 import org.xmlrobot.horizon.Tachyon;
 import org.xmlrobot.time.Inheritance;
 import org.xmlrobot.util.Command;
@@ -75,6 +76,14 @@ public abstract class Child
 		return !isEmpty() ? getChild().setValue(value) : null;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.hyperspace.Recursion#get()
+	 */
+	@Override
+	public Entity<V,K> get() {
+		return (Entity<V,K>) super.get();
+	}
+	
 	/**
      * {@link Child} default class constructor.
 	 */
@@ -102,7 +111,7 @@ public abstract class Child
 	 * @param gen {@link Parity} the gender
 	 */
 	protected Child(
-			Class<? extends Child<K,V>> type, 
+			Class<? extends Child<K,V>> type,
 			Class<? extends Child<V,K>> antitype,
 			Parity gen) {
 		super(type, antitype, gen);
@@ -165,7 +174,17 @@ public abstract class Child
 	 */
 	@Override
 	public int reproduceTo(Mass<V,K> o) {
-		return matrix().reproduce(o.get().getChild(), get().getChild());
+		// call hypergenesis computation
+		int cmp = get().matrix().reproduce(o.getChild(), getChild());
+		// push hypergenesis computation result
+		push(new Graviton<K,V>(get().output()) {
+
+			/**
+			 * 5588441933378797548L
+			 */
+			private static final long serialVersionUID = 5588441933378797548L;
+		});
+		return cmp;
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.time.Freedom#removeAll(org.xmlrobot.genesis.Congregation)
@@ -213,23 +232,22 @@ public abstract class Child
 
  	// visor implementation
  	/* (non-Javadoc)
- 	 * @see org.xmlrobot.genesis.Mass#keyVisor()
- 	 */
- 	@Override
- 	public Congregation<K> keyVisor() {
- 		Congregation<K> keys;
- 		return (keys = keyVisor) == null ? 
- 				(keyVisor = new KeyVisor(plasma)) : keys;
- 	}
- 	/* (non-Javadoc)
  	 * @see org.xmlrobot.genesis.Mass#valueVisor()
  	 */
  	@Override
  	public Congregation<V> valueVisor() {
  		Congregation<V> values;
- 		return (values = valueVisor) == null ? 
- 				(valueVisor = new ValueVisor(plasma)) : values;
+ 		return (values = visor) == null ? 
+ 				(visor = new Visor(replicator)) : values;
  	}
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.time.Time#iterator()
+	 */
+	@Override
+	public Iterator<Mass<K,V>> iterator() {
+		Mass<K,V> future;
+		return (future = getFuture()) != null ? future.iterator() : null;
+	}
  	
 	// matrix implementation
  	/* (non-Javadoc)
@@ -280,7 +298,7 @@ public abstract class Child
 	 * @see org.xmlrobot.genesis.Atlas#get(java.lang.Object)
 	 */
 	public V get(K key) {
-    	return !isEmpty() ? getChild().getValue(key) : null;
+    	return getValue(key);
     }
     
     /* (non-Javadoc)
@@ -301,45 +319,43 @@ public abstract class Child
      * @see org.xmlrobot.genesis.DNA#forEach(java.util.function.BiConsumer)
      */
     public void forEach(BiConsumer<? super K, ? super V> action) {
-    	if(!isEmpty())
-    		getChild().forEachKey(action);
+    	forEachKey(action);
     }
     /* (non-Javadoc)
      * @see org.xmlrobot.genesis.DNA#getOrDefault(java.lang.Object, java.lang.Object)
      */
     public V getOrDefault(K key, V defaultValue) {
-    	return !isEmpty() ? getChild().getValueOrDefault(key, defaultValue) : null;
+    	return getValueOrDefault(key, defaultValue);
     }
     /* (non-Javadoc)
      * @see org.xmlrobot.genesis.DNA#replaceAll(java.util.function.BiFunction)
      */
     public void replaceAll(BiFunction<? super K, ? super V, ? extends V> function) {
-    	if(!isEmpty())
-    		getChild().replaceAllValues(function);
+    	replaceAllValues(function);
     }
     /* (non-Javadoc)
      * @see org.xmlrobot.genesis.DNA#putIfAbsent(java.lang.Object, java.lang.Object)
      */
     public V putIfAbsent(K key, V value) {
-		return !isEmpty() ? getChild().putValueIfAbsent(key, value) : null;
+		return putValueIfAbsent(key, value);
     }
     /* (non-Javadoc)
      * @see org.xmlrobot.genesis.DNA#remove(java.lang.Object, java.lang.Object)
      */
     public boolean remove(K key, V value) {
-    	return !isEmpty() ? getChild().removeByKey(key, value) : null;
+    	return removeByKey(key, value);
     }
     /* (non-Javadoc)
      * @see org.xmlrobot.genesis.DNA#replace(java.lang.Object, java.lang.Object, java.lang.Object)
      */
     public boolean replace(K key, V oldValue, V newValue){
-		return !isEmpty() ? getChild().replaceValue(key, oldValue, newValue) : null;
+		return replaceValue(key, oldValue, newValue);
     }
     /* (non-Javadoc)
      * @see org.xmlrobot.genesis.DNA#replace(java.lang.Object, java.lang.Object)
      */
     public V replace(K key, V value) {
-		return !isEmpty() ? getChild().replaceValue(key, value) : null;
+		return replaceValue(key, value);
     }
 
 	// space implementation
@@ -351,25 +367,11 @@ public abstract class Child
 		return !isEmpty() ? getChild().putValue(key, value) : put(key, value);
 	}
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.space.Contraction#putKey(java.lang.Object, java.lang.Object)
-	 */
-	@Override
-	public K putKey(V value, K key) {
-		return !isEmpty() ? getChild().putKey(value, key) : null;
-	}
-	/* (non-Javadoc)
 	 * @see org.xmlrobot.space.Contraction#putValueIfAbsent(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	public V putValueIfAbsent(K key, V value) {
-		return !isEmpty() ? getChild().putValueIfAbsent(key, value) : null;
-	}
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.space.Contraction#putKeyIfAbsent(java.lang.Object, java.lang.Object)
-	 */
-	@Override
-	public K putKeyIfAbsent(V value, K key) {
-		return !isEmpty() ? getChild().putKeyIfAbsent(value, key) : null;
+		return !isEmpty() ? getChild().putValueIfAbsent(key, value) : put(key, value);
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.space.Contraction#putAllValues(org.xmlrobot.genesis.Mass)
@@ -380,26 +382,11 @@ public abstract class Child
 			super.putAllValues(m);
 	}
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.space.Contraction#putAllKeys(org.xmlrobot.genesis.Mass)
-	 */
-	@Override
-	public void putAllKeys(Mass<? extends V, ? extends K> m) {
-		if(!isEmpty())
-			super.putAllKeys(m);
-	}
-	/* (non-Javadoc)
 	 * @see org.xmlrobot.space.Compression#call(java.lang.Object)
 	 */
 	@Override
 	public Mass<K,V> call(K key) {
 		return !isEmpty() ? getChild().call(key) : null;
-	}
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.space.Compression#callReversed(java.lang.Object)
-	 */
-	@Override
-	public Mass<V, K> callReversed(V value) {
-		return !isEmpty() ? getChild().callReversed(value) : null;
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.space.Compression#getValue(java.lang.Object)
@@ -409,25 +396,11 @@ public abstract class Child
 		return !isEmpty() ? getChild().getValue(key) : null;
 	}
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.space.Compression#getKey(java.lang.Object)
-	 */
-	@Override
-	public K getKey(V value) {
-		return !isEmpty() ? getChild().getKey(value) : null;
-	}
-	/* (non-Javadoc)
 	 * @see org.xmlrobot.space.Compression#getValueOrDefault(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	public V getValueOrDefault(K key, V defaultValue) {
 		return !isEmpty() ? getChild().getValueOrDefault(key, defaultValue) : null;
-	}
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.space.Compression#getKeyOrDefault(java.lang.Object, java.lang.Object)
-	 */
-	@Override
-	public K getKeyOrDefault(V value, K defaultKey) {
-		return !isEmpty() ? getChild().getKeyOrDefault(value, defaultKey) : null;
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.space.Attraction#containsKey(java.lang.Object)
@@ -437,25 +410,11 @@ public abstract class Child
 		return !isEmpty() ? getChild().containsKey(key) : null;
 	}
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.space.Attraction#containsValue(java.lang.Object)
-	 */
-	@Override
-	public boolean containsValue(V value) {
-		return !isEmpty() ? getChild().containsValue(value) : null;
-	}
-	/* (non-Javadoc)
 	 * @see org.xmlrobot.space.Attraction#collectKeys(org.xmlrobot.genesis.Congregation)
 	 */
 	@Override
 	public Congregation<K> collectKeys(Congregation<K> keys) {
 		return !isEmpty() ? getChild().collectKeys(keys) : null;
-	}
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.space.Attraction#collectValues(org.xmlrobot.genesis.Congregation)
-	 */
-	@Override
-	public Congregation<V> collectValues(Congregation<V> values) {
-		return !isEmpty() ? getChild().collectValues(values) : null;
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.space.Attraction#forEachKey(java.util.function.BiConsumer)
@@ -466,26 +425,11 @@ public abstract class Child
 			super.forEachKey(action);
 	}
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.space.Attraction#forEachValue(java.util.function.BiConsumer)
-	 */
-	@Override
-	public void forEachValue(BiConsumer<? super V, ? super K> action) {
-		if(!isEmpty())
-			super.forEachValue(action);
-	}
-	/* (non-Javadoc)
 	 * @see org.xmlrobot.space.Repulsion#replaceValue(java.lang.Object, java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	public boolean replaceValue(K key, V oldValue, V newValue) {
 		return !isEmpty() ? getChild().replaceValue(key, oldValue, newValue) : null;
-	}
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.space.Repulsion#replaceKey(java.lang.Object, java.lang.Object, java.lang.Object)
-	 */
-	@Override
-	public boolean replaceKey(V value, K oldKey, K newKey) {
-		return !isEmpty() ? getChild().replaceKey(value, oldKey, newKey) : null;
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.space.Repulsion#replaceAllValues(java.util.function.BiFunction)
@@ -496,26 +440,11 @@ public abstract class Child
 			super.replaceAllValues(function);
 	}
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.space.Repulsion#replaceAllKeys(java.util.function.BiFunction)
-	 */
-	@Override
-	public void replaceAllKeys(BiFunction<? super V, ? super K, ? extends K> function) {
-		if(!isEmpty())
-			super.replaceAllKeys(function);
-	}
-	/* (non-Javadoc)
 	 * @see org.xmlrobot.space.Repulsion#replaceValue(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	public V replaceValue(K key, V value) {
 		return !isEmpty() ? getChild().replaceValue(key, value) : null;
-	}
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.space.Repulsion#replaceKey(java.lang.Object, java.lang.Object)
-	 */
-	@Override
-	public K replaceKey(V value, K key) {
-		return !isEmpty() ? getChild().replaceKey(value, key) : null;
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.space.Expansion#computeIfAbsent(java.lang.Object, java.util.function.Function)
@@ -526,28 +455,12 @@ public abstract class Child
 		return !isEmpty() ? getChild().computeIfAbsent(key, mappingFunction) : null;
 	}
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.space.Expansion#computeInvertedIfAbsent(java.lang.Object, java.util.function.Function)
-	 */
-	@Override
-	public K computeInvertedIfAbsent(V key,
-			Function<? super V, ? extends K> mappingFunction) {
-		return !isEmpty() ? getChild().computeInvertedIfAbsent(key, mappingFunction) : null;
-	}
-	/* (non-Javadoc)
 	 * @see org.xmlrobot.space.Expansion#compute(java.lang.Object, java.util.function.BiFunction)
 	 */
 	@Override
 	public V compute(K key,
 			BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
 		return !isEmpty() ? getChild().compute(key, remappingFunction) : null;
-	}
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.space.Expansion#computeInverted(java.lang.Object, java.util.function.BiFunction)
-	 */
-	@Override
-	public K computeInverted(V value,
-			BiFunction<? super V, ? super K, ? extends K> remappingFunction) {
-		return !isEmpty() ? getChild().computeInverted(value, remappingFunction) : null;
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.space.Expansion#computeIfPresent(java.lang.Object, java.util.function.BiFunction)
@@ -558,28 +471,12 @@ public abstract class Child
 		return !isEmpty() ? getChild().computeIfPresent(key, remappingFunction) : null;
 	}
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.space.Expansion#computeInvertedIfPresent(java.lang.Object, java.util.function.BiFunction)
-	 */
-	@Override
-	public K computeInvertedIfPresent(V key,
-			BiFunction<? super V, ? super K, ? extends K> remappingFunction) {
-		return !isEmpty() ? getChild().computeInvertedIfPresent(key, remappingFunction) : null;
-	}
-	/* (non-Javadoc)
 	 * @see org.xmlrobot.space.Dilatation#merge(java.lang.Object, java.lang.Object, java.util.function.BiFunction)
 	 */
 	@Override
 	public V merge(K key, V value,
 			BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
 		return !isEmpty() ? getChild().merge(key, value, remappingFunction) : null;
-	}
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.space.Dilatation#mergeInverted(java.lang.Object, java.lang.Object, java.util.function.BiFunction)
-	 */
-	@Override
-	public K mergeInverted(V value, K key,
-			BiFunction<? super K, ? super K, ? extends K> remappingFunction) {
-		return !isEmpty() ? getChild().mergeInverted(value, key, remappingFunction) : null;
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.space.Dilatation#removeByKey(java.lang.Object)
@@ -589,24 +486,10 @@ public abstract class Child
 		return !isEmpty() ? getChild().removeByKey(key) : null;
 	}
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.space.Dilatation#removeByValue(java.lang.Object)
-	 */
-	@Override
-	public Mass<V,K> removeByValue(V value) {
-		return !isEmpty() ? getChild().removeByValue(value) : null;
-	}
-	/* (non-Javadoc)
 	 * @see org.xmlrobot.space.Dilatation#removeByKey(java.lang.Object, java.lang.Object)
 	 */
 	@Override
 	public boolean removeByKey(K key, V value) {
 		return !isEmpty() ? getChild().removeByKey(key, value) : null;
-	}
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.space.Dilatation#removeByValue(java.lang.Object, java.lang.Object)
-	 */
-	@Override
-	public boolean removeByValue(V value, K key) {
-		return !isEmpty() ? getChild().removeByValue(value, key) : null;
 	}
 }

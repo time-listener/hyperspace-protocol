@@ -96,17 +96,14 @@ public abstract class Compression<K,V>
 	}
 
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.TimeListener#callPositive(java.lang.Object)
+	 * @see org.xmlrobot.genesis.Mass#call(java.lang.Object)
 	 */
 	@Override
 	public Mass<K,V> call(K key) {
-
 		if(key.equals(getKey())) {
-			
 			return call(); // a.k.a. this
 		}
 		else if(!isEmpty()) {
-			
 			return getChild().call(key);
 		}
 		else {
@@ -114,73 +111,49 @@ public abstract class Compression<K,V>
 		}
 	}
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.TimeListener#callNegative(java.lang.Object)
+	 * @see org.xmlrobot.genesis.Mass#callReversed(java.lang.Object)
 	 */
 	@Override
 	public Mass<V,K> callReversed(V value) {
-
-		if(value.equals(getValue())) {
-			
-			return get(); // a.k.a. stem
-		}
-		else if(!isEmpty()) {
-			
-			return getChild().callReversed(value);
-		}
-		else {
-			return null;
-		}
+		return get().call(value);
 	}
-    /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#getNegative(java.lang.Object)
-     */
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.Mass#getValue(java.lang.Object)
+	 */
+	@Override
     public V getValue(K key) {
-    	
         if(key.equals(getKey())) {
-        	
         	return getValue();
         }
         else if(!isEmpty()) {
-        	
         	return getChild().getValue(key);
         }
         else {
         	return null;
         }
     }
-    /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#getPositive(java.lang.Object)
-     */
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.Mass#getKey(java.lang.Object)
+	 */
+	@Override
     public K getKey(V value) {
-
-        if(value.equals(getValue())) {
-        	
-        	return getKey();
-        }
-        else if(!isEmpty()) {
-        	
-        	return getChild().getKey(value);
-        }
-        else {
-        	return null;
-        }
+    	return get().getValue(value);
     }
-    /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#getOrDefault(java.lang.Object, java.lang.Object)
-     */
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.Mass#getValueOrDefault(java.lang.Object, java.lang.Object)
+	 */
+	@Override
     public V getValueOrDefault(K key, V defaultValue) {
         V v;
         return (((v = getValue(key)) != null) || containsKey(key))
             ? v
             : defaultValue;
     }
-    /* (non-Javadoc)
-     * @see org.xmlrobot.genesis.TimeListener#getOrDefault(java.lang.Object, java.lang.Object)
-     */
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.Mass#getKeyOrDefault(java.lang.Object, java.lang.Object)
+	 */
+	@Override
     public K getKeyOrDefault(V value, K defaultKey) {
-    	K k;
-        return (((k = getKey(value)) != null) || containsValue(value))
-            ? k
-            : defaultKey;
+    	return get().getValueOrDefault(value, defaultKey);
     }
 }

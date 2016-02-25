@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceReference;
-import org.xmlrobot.genesis.Replicator;
+import org.xmlrobot.genesis.Plasma;
 import org.xmlrobot.genesis.TimeListener;
 import org.xmlrobot.genesis.Mass;
 import org.xmlrobot.space.Space;
@@ -31,7 +31,7 @@ public abstract class Parent
 	<K extends TimeListener<? super K,? super V>, 
 	 V extends TimeListener<? super V,? super K>>
 		extends Space<K,V>
-			implements Replicator<K,V> {
+			implements Plasma<K,V> {
 	
 	/**
 	 * -5344433423123917995L
@@ -41,7 +41,7 @@ public abstract class Parent
 	/**
 	 * The manipulated mass.
 	 */
-	transient volatile Mass<K,V> plasma;
+	protected transient volatile Mass<K,V> replicator;
 	
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.space.Space#getKey()
@@ -95,8 +95,8 @@ public abstract class Parent
  	 */
  	@Override
  	@XmlTransient
- 	public Mass<K,V> getPlasma() {
- 		return plasma;
+ 	public Mass<K,V> getReplicator() {
+ 		return replicator;
  	}
  	
 	/**
@@ -119,7 +119,7 @@ public abstract class Parent
 			Parity gen)	{
 		super(type, gen);
 		// create mass
-		plasma = instance(matter, antimatter);
+		replicator = instance(matter, antimatter);
 	}
 	/**
 	 * {@link Parent} class constructor.
@@ -139,7 +139,7 @@ public abstract class Parent
 		// listen value's masses
 		value.addMassListener(this);
 		// create mass
-		plasma = instance(matter, antimatter, key, value, parent.getPlasma());
+		replicator = instance(matter, antimatter, key, value, parent.getReplicator());
 	}
 	/**
 	 * {@link Parent} class constructor.
@@ -159,7 +159,7 @@ public abstract class Parent
 		// listen value's masses
 		value.addMassListener(this);
 		// create mass
-		plasma = instance(matter, antimatter, key, value);
+		replicator = instance(matter, antimatter, key, value);
 	}
 	/**
 	 * {@link Parent} class constructor.
@@ -238,13 +238,13 @@ public abstract class Parent
 		// cast source
 		Parent<V,K> stem = (Parent<V,K>) value;
 		// set child's plasma
-		stem.plasma = plasma.get();
+		stem.replicator = replicator.get();
 		// my plasma is listened by my root's plasma
-		stem.plasma.setStem(plasma.getRoot());
-		stem.plasma.setRoot(plasma.getStem());
+		stem.replicator.setStem(replicator.getRoot());
+		stem.replicator.setRoot(replicator.getStem());
 		// listen plasma masses
-		stem.plasma.addMassListener(this);
-		plasma.addMassListener(stem);
+		stem.replicator.addMassListener(this);
+		replicator.addMassListener(stem);
 	}
  	/* (non-Javadoc)
  	 * @see org.xmlrobot.hyperspace.Abstraction#serviceChanged(org.osgi.framework.ServiceEvent)
@@ -258,11 +258,11 @@ public abstract class Parent
 			// commute command
 			if (event.getType() == ServiceEvent.REGISTERED) {
 
-				plasma.push(Command.SUBMIT);
+				replicator.push(Command.SUBMIT);
 			} 
 			else if (event.getType() == ServiceEvent.UNREGISTERING) {
 				// release replication
-				plasma.push(Command.RELEASE);
+				replicator.push(Command.RELEASE);
 			}
 		}
 	}

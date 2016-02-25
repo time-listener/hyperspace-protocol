@@ -69,14 +69,13 @@ public abstract class Hyperclock<K,V>
 	 */
 	private static final long serialVersionUID = 1539586331627310934L;
 
-	// Visors
+	// Visor
     /**
-     * Each of these fields are initialized to contain an instance of the
-     * appropriate view the first time this view is requested.  The views are
+     * This field is initialized to contain an instance of the
+     * appropriate visor the first time this visor is requested.  The visors is
      * stateless, so there's no reason to create more than one of each.
      */
-    protected transient volatile Congregation<K> keyVisor;
-    protected transient volatile Congregation<V> valueVisor;
+    protected transient volatile Congregation<V> visor;
     
 	/**
 	 * {@link Hyperclock} default class constructor.
@@ -156,18 +155,16 @@ public abstract class Hyperclock<K,V>
 		void pulse(TimeListener<?,?> listener, Tachyon<Y,X> event) {
 		// don't forget to call ancestral methods
 		super.pulse(listener, event);
-		// declare future inheritance
-		Mass<K,V> child;
 		// assign and check
-		if ((child = getChild()) != null) {
+		if (!isEmpty()) {
 			/** 
 			 * this is an abstract hypermass transfer protocol
 			 * that concurrently sends messages across the future.
 			 * Because the FUTURE is NOW.
 			 */
-			child.pulse(listener, event);
+			getChild().pulse(listener, event);
 		}
-		// rebound recurrently
+		// rebound recurrently: it goes UP
 		else get().echo(listener, new Tachyon<X,Y>(event.get()) {
 			
 			/**
@@ -198,7 +195,7 @@ public abstract class Hyperclock<K,V>
 			/*
 			 * Send mass to entity
 			 * */ 
-			listener.echo(this, event);
+//			listener.echo(this, event);
 		}
 	}
 	/**
