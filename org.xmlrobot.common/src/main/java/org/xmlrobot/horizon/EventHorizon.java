@@ -3,143 +3,103 @@
  */
 package org.xmlrobot.horizon;
 
-import java.util.Collection;
-import java.util.EventObject;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.io.File;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceRegistration;
-import org.xmlrobot.genesis.MassListener;
-import org.xmlrobot.genesis.TimeListener;
+import org.xmlrobot.MassListener;
+import org.xmlrobot.TimeListener;
+import org.xmlrobot.protocol.Hyperheader;
 import org.xmlrobot.util.Command;
+import org.xmlrobot.util.Parity;
 
-/** 
- * An <i>event horizon</i> is a boundary in hyperspace beyond which events 
- * cannot affect an outside {@code Observer}. It is defined as 
- * "<tt>the point of no return</tt>". I,e, the point at which the inheritance 
- * kingdom becomes so great as to make free impossible.
- * <br><br>
- *  @author joan
+/**
+ * @author joan
+ *
  */
-public abstract class EventHorizon
-		extends EventObject 
-			implements MassListener {
-	
-	/**
-	 * -111830605057953142L
-	 */
-	private static final long serialVersionUID = -111830605057953142L;
+public abstract class EventHorizon 
+	extends Mass<MassListener> 
+		implements MassListener {
 
-	/* (non-Javadoc)
-	 * @see java.util.EventObject#getSource()
+	/**
+	 * 4880023876140949813L
 	 */
-	@Override
-	public synchronized MassListener getSource() {
-		return (MassListener) super.getSource();
-	}
-	
+	private static final long serialVersionUID = 4880023876140949813L;
+
 	/**
 	 * @param source
 	 */
 	public EventHorizon(MassListener source) {
 		super(source);
 	}
-	
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.Deflector#pulse(org.xmlrobot.genesis.TimeListener, org.xmlrobot.horizon.Takion)
+	 * @see java.lang.Object#clone()
 	 */
 	@Override
-	public <X extends TimeListener<X, Y>, Y extends TimeListener<Y, X>> void pulse(
-			TimeListener<?,?> sender, Tachyon<Y,X> event) {
-		getSource().pulse(sender, event);
+	public Object clone() {
+		try {
+			return super.clone();
+		} catch (CloneNotSupportedException e) {
+			return null;
+		}
 	}
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.Deflector#echo(org.xmlrobot.genesis.TimeListener, org.xmlrobot.horizon.Takion)
+	 * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
 	 */
 	@Override
-	public <X extends TimeListener<X, Y>, Y extends TimeListener<Y, X>> void echo(
-			TimeListener<?,?> sender, Tachyon<X,Y> event) {
-		getSource().echo(sender, event);
+	public void start(BundleContext context) {
+		getSource().start(context);
 	}
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.MassListener#update()
-	 */
-	@Override
-	public void update() {
-		getSource().update();
-	}
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.Executor#shutdown()
-	 */
-	@Override
-	public void shutdown() {
-		getSource().shutdown();
-	}
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.Executor#isShutdown()
-	 */
-	@Override
-	public boolean isShutdown() {
-		return getSource().isShutdown();
-	}
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.Executor#isTerminated()
-	 */
-	@Override
-	public boolean isTerminated() {
-		return getSource().isTerminated();
-	}
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.Executor#invokeAll(java.util.Collection)
-	 */
-	@Override
-	public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks)
-			throws InterruptedException {
-		return getSource().invokeAll(tasks);
-	}
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.Executor#invokeAll(java.util.Collection, long, java.util.concurrent.TimeUnit)
-	 */
-	@Override
-	public <T> List<Future<T>> invokeAll(
-			Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
-			throws InterruptedException {
-		return getSource().invokeAll(tasks, timeout, unit);
-	}
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.Executor#invokeAny(java.util.Collection)
-	 */
-	@Override
-	public <T> T invokeAny(Collection<? extends Callable<T>> tasks)
-			throws InterruptedException, ExecutionException {
-		return getSource().invokeAny(tasks);
-	}
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.Executor#invokeAny(java.util.Collection, long, java.util.concurrent.TimeUnit)
-	 */
-	@Override
-	public <T> T invokeAny(Collection<? extends Callable<T>> tasks,
-			long timeout, TimeUnit unit) throws InterruptedException,
-			ExecutionException, TimeoutException {
-		return getSource().invokeAny(tasks, timeout, unit);
-	}
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.MassListener#start(org.osgi.framework.BundleContext)
-	 */
-	@Override
-	public void start(BundleContext hyperspace) {
-		getSource().start(hyperspace);
-	}
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.MassListener#stop(org.osgi.framework.BundleContext)
+	 * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
 	 */
 	@Override
 	public void stop(BundleContext context) {
 		getSource().stop(context);
+	}
+	/* (non-Javadoc)
+	 * @see java.util.concurrent.Executor#execute(java.lang.Runnable)
+	 */
+	@Override
+	public void execute(Runnable command) {
+		getSource().execute(command);
+	}
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.MassListener#mass(org.xmlrobot.horizon.Tachyon)
+	 */
+	@Override
+	public <X extends TimeListener<X,Y>,Y extends TimeListener<Y,X>> void mass(MassListener source, Tachyon<X,Y> event) {
+		getSource().mass(source, event);
+	}
+	/* (non-Javadoc)
+	 * @see java.lang.Runnable#run()
+	 */
+	@Override
+	public void run() {
+		getSource().run();
+	}
+	/* (non-Javadoc)
+	 * @see java.util.concurrent.ThreadFactory#newThread(java.lang.Runnable)
+	 */
+	@Override
+	public Thread newThread(Runnable r) {
+		return getSource().newThread(r);
+	}
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.MassListener#write(java.io.File)
+	 */
+	@Override
+	public void write(File file) {
+		getSource().write(file);
+	}
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.MassListener#toArray()
+	 */
+	@Override
+	public Object[] toArray() {
+		return getSource().toArray();
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.MassListener#getCommand()
@@ -152,8 +112,15 @@ public abstract class EventHorizon
 	 * @see org.xmlrobot.genesis.MassListener#push(org.xmlrobot.util.Command)
 	 */
 	@Override
-	public void push(Command state) {
-		getSource().push(state);
+	public void setCommand(Command value) {
+		getSource().setCommand(value);
+	}
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.MassListener#getContext()
+	 */
+	@Override
+	public BundleContext getContext() {
+		return getSource().getContext();
 	}
 	/* (non-Javadoc)
 	 * @see org.xmlrobot.genesis.MassListener#getFamily()
@@ -184,10 +151,73 @@ public abstract class EventHorizon
 		return getSource().getRunner();
 	}
 	/* (non-Javadoc)
-	 * @see org.xmlrobot.genesis.MassListener#getContext()
+	 * @see org.xmlrobot.genesis.MassListener#getGen()
 	 */
 	@Override
-	public BundleContext getContext() {
-		return getSource().getContext();
+	public Parity getGen() {
+		return getSource().getGen();
+	}
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.MassListener#setGen(org.xmlrobot.util.Parity)
+	 */
+	@Override
+	public void setGen(Parity value) {
+		getSource().setGen(value);
+	}
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.MassListener#dna()
+	 */
+	@Override
+	public Hyperheader dna() {
+		return getSource().dna();
+	}
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.MassListener#update()
+	 */
+	@Override
+	public void update() {
+		getSource().update();
+	}
+	/* (non-Javadoc)
+	 * @see org.osgi.framework.ServiceListener#serviceChanged(org.osgi.framework.ServiceEvent)
+	 */
+	@Override
+	public void serviceChanged(ServiceEvent event) {
+		getSource().serviceChanged(event);
+	}
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.genesis.MassListener#depth()
+	 */
+	@Override
+	public AtomicInteger depth(MassListener sender) {
+		return getSource().depth(sender);
+	}
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.MassListener#clear()
+	 */
+	@Override
+	public void clear(MassListener sender) {
+		getSource().clear(sender);
+	}
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.MassListener#unify()
+	 */
+	@Override
+	public void unify(MassListener sender) {
+		getSource().unify(sender);
+	}
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.MassListener#addMassListener(org.xmlrobot.MassListener)
+	 */
+	@Override
+	public void addMassListener(MassListener listener) {
+		getSource().addMassListener(listener);
+	}
+	/* (non-Javadoc)
+	 * @see org.xmlrobot.MassListener#removeMassListener(org.xmlrobot.MassListener)
+	 */
+	@Override
+	public void removeMassListener(MassListener listener) {
+		getSource().removeMassListener(listener);
 	}
 }

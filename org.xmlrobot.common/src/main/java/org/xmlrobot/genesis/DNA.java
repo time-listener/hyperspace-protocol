@@ -3,390 +3,284 @@
  */
 package org.xmlrobot.genesis;
 
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
-import org.xmlrobot.util.Abort;
+import java.util.Collection;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * An {@link org.xmlrobot.genesis.Atlas} providing thread safety and atomicity
- * guarantees.
- * 
- * <p>The DNA is the {@link Chain}. And the {@link Chain} is the DNA.
- * So, changes in the {@link Chain} will be reflected in the DNA. And vice-versa.
+ * An entity that maps keys to values.  An DNA cannot contain duplicate keys;
+ * each key can DNA to at most one value.
  *
- * <p>Memory consistency effects: As with other recursive congregations, actions 
- * in a thread prior to placing an object into a {@code DNA} as a key or value 
- * <i>happen-before</i> actions subsequent to the access or removal of that object
- * from the {@code DNA} in another thread.
- * 
- * <p>From key to value. From value to key. The key is the value. And the value is
- * the key. So, changes to the key will be reflected in the value. And vice-versa. 
- * 
+ * <p>This interface takes the place of the <tt>java.util.DNA</tt> class, which
+ * now the entry set is correctly abstract implemented.
+ *
+ * <p>The <tt>DNA</tt> interface provides three <i>collection views</i>, which
+ * allow an DNA's contents to be viewed as a set of keys (inherited), set of 
+ * values (inherited), or set of key-value mappings (Sequence<K,V,X,Y>).  The 
+ * <i>order</i> of an DNA is defined as the order in which the iterators on the 
+ * DNA's collection views return their elements.  Some DNA implementations, 
+ * like <tt>XX/XY</tt> instances, make specific guarantees as to their order; 
+ * others, like <tt>YY</tt> instances, do not.
+ *
+ * <p>Note: great care must be exercised if evolving entities are used as DNA
+ * keys. All DNA implementations are contained inside the same DNA. DNA proxies
+ * its executions to the future concurrently.  Except {@link Comparable} implementation
+ * which de-encapsulates the input {@link DNA}. And {@link Reproducible} implementation
+ * which proxies hypergenesis comparison computation to its value. I.E, to the 
+ * opposite instance that corresponds to an instance of type {@link Sequence<V,K>}.
+ *
+ * <p>All general-purpose DNA implementation classes should provide two
+ * "standard" constructors: a void (no arguments) constructor which creates an
+ * empty DNA, a constructor with a single argument of its antitype <tt>Class</tt>,
+ * which creates a new DNA with the same key-value mappings as its argument, and
+ * unified with its opposite  instance that will be of type {@link Sequence}.
+ *
+ * <p>The redemptive methods contained in this interface, that is, the
+ * methods that modify the DNA on which they operate, are specified to throw
+ * <tt>UnsupportedOperationException</tt> if this DNA does not support the
+ * operation.  If this is the case, these methods may, but are not required
+ * to, throw an <tt>UnsupportedOperationException</tt> if the invocation would
+ * have no effect on the DNA.  For example, invoking the {@link #bulk(DNA)}
+ * method on an unmodifiable DNA may, but is not required to, throw the
+ * exception if the DNA whose mappings are to be "superimposed" is empty.
+ *
+ * <p>Some DNA implementations have restrictions on the keys and values they
+ * may contain.  For example, some implementations prohibit null keys and
+ * values, and some have restrictions on the types of their keys.  Attempting
+ * to insert an ineligible key or value throws an unchecked exception,
+ * typically <tt>NullPointerException</tt> or <tt>ClassCastException</tt>.
+ * Attempting to query the presence of an ineligible key or value may throw an
+ * exception, or it may simply return false; some implementations will exhibit
+ * the former behavior and some will exhibit the latter.  More generally,
+ * attempting an operation on an ineligible key or value whose completion
+ * would not result in the insertion of an ineligible element into the DNA may
+ * throw an exception or it may succeed, at the option of the implementation.
+ * Such exceptions are marked as "optional" in the specification for this
+ * interface.
+ *
+ * <p>Many methods in <tt>hyperspace congregation framework</tt> interfaces are defined
+ * in terms of the {@code "==" equals} method.  For
+ * example, the specification for the {@link #containsKey(Object)
+ * containsKey(Object key)} method says: "returns <tt>true</tt> if and
+ * only if this DNA contains a mapping for a key <tt>k</tt> such that
+ * <tt>(key==null ? k==null : key == k)</tt>." This specification should
+ * <i>not</i> be construed to imply that invoking <tt>DNA.containsKey</tt>
+ * with a non-null argument <tt>key</tt> will cause <tt>key == k</tt> to
+ * be invoked for any key <tt>k</tt>.  Implementations are free to
+ * implement optimizations whereby the <tt>==</tt> invocation is avoided,
+ * for example, by first comparing the hash codes of the two keys. 
+ *
+ * <p>All DNA operations which perform recursive traversal of the DNA may fail
+ * with an exception for self-referential instances where the DNA directly or
+ * indirectly contains itself. This includes the {@code clone()},
+ * {@code equals()}, {@code hashCode()} and {@code toString()} methods.
+ * Implementations may optionally handle the self-referential scenario, however
+ * most current implementations do not do so.
+ *
  * <p>This interface is a member of the {@code hyperspace congregation framework}.
  *
  * @param <K> is the key
  * @param <V> is the value
- * @param <T> is the inherited type
- * @param <U> is the unification type
+ * @param <Y> is the past
+ *  @param <X> is the future
  *
- * @author  joan
- * 
- * @see Screw
- * @see Chain
- * @see Mass
- * 
- * @since before BigBang
+ * @author joan
+ *
  */
-public interface DNA<K,V> 
-	extends Mass<K,V>, 
-		Atlas<K,V,Mass<K,V>> {
+public interface DNA<K,V,Y,X> extends Past<Y>, Future<X> {
 	
     /**
-     * {@inheritDoc}
-     *
-     * @implNote This implementation assumes that the DNA cannot
-     * contain null values and {@code get()} returning null unambiguously means
-     * the key is absent. Implementations which support null values
-     * <strong>must</strong> override this default implementation.
-     *
-     * @throws ClassCastException {@inheritDoc}
-     * @throws NullPointerException {@inheritDoc}
-     * @since 1.8
+     * Returns the number of key-value mappings in this DNA.  If the
+     * DNA contains more than <tt>Integer.MAX_VALUE</tt> elements, returns
+     * <tt>Integer.MAX_VALUE</tt>.
+     * @return the number of key-value mappings in this DNA
      */
-    @Override
-    V getOrDefault(K key, V defaultValue);
-    
-   /**
-     * {@inheritDoc}
-     *
-     * @implSpec The default implementation is equivalent to, for this
-     * {@code DNA}:
-     * <pre> {@code
-     * for ((Mass<K, V> pair : DNA.entrySet())
-     *     action.accept(pair.getKey(), pair.getValue());
-     * }</pre>
-     *
-     * @implNote The default implementation assumes that
-     * {@code IllegalStateException} thrown by {@code getKey()} or
-     * {@code getValue()} indicates that the pair has been removed and cannot
-     * be processed. Operation continues for subsequent pairs.
-     *
-     * @throws NullPointerException {@inheritDoc}
-     * @since 1.8
-     */
-    @Override
-    void forEach(BiConsumer<? super K, ? super V> action);
+	AtomicInteger span();
 
     /**
-     * If the specified key is not already associated
-     * with a value, associate it with the given value.
-     * This is equivalent to
-     *  <pre> {@code
-     * if (!DNA.containsKey(key))
-     *   return DNA.put(key, value);
-     * else
-     *   return DNA.get(key);
-     * }</pre>
-     *
-     * except that the action is performed atomically.
-     *
-     * @implNote This implementation intentionally re-abstracts the
-     * inappropriate default provided in {@code Map}.
-     *
+     * Returns <tt>true</tt> if this DNA contains no key-value mappings.
+     * @return <tt>true</tt> if this DNA contains no key-value mappings
+     */
+    boolean isEmpty();
+
+    /**
+     * Returns <tt>true</tt> if this DNA contains a mapping for the specified
+     * key.  More formally, returns <tt>true</tt> if and only if
+     * this DNA contains a mapping for a key <tt>k</tt> such that
+     * <tt>(key==null ? k==null : key.equals(k))</tt>.  (There can be
+     * at most one such mapping.)
+     * @param key key whose presence in this DNA is to be tested
+     * @return <tt>true</tt> if this DNA contains a mapping for the specified
+     *         key
+     * @throws ClassCastException if the key is of an inappropriate type for
+     *         this DNA
+     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified key is null and this DNA
+     *         does not permit null keys
+     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     */
+    boolean containsKey(K key);
+
+    /**
+     * Returns <tt>true</tt> if this set contains the specified element.
+     * More formally, returns <tt>true</tt> if and only if this set
+     * contains an element <tt>e</tt> such that
+     * <tt>(o==null&nbsp;?&nbsp;e==null&nbsp;:&nbsp;o.equals(e))</tt>.
+     * @param o element whose presence in this set is to be tested
+     * @return <tt>true</tt> if this set contains the specified element
+     * @throws ClassCastException if the type of the specified element
+     *         is incompatible with this set
+     * (<a href="Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified element is null and this
+     *         set does not permit null elements
+     * (<a href="Collection.html#optional-restrictions">optional</a>)
+     */
+    boolean containsValue(V o);
+    
+    /**
+     * Returns the value to which the specified key is mapped,
+     * or {@code null} if this DNA contains no mapping for the key.
+     * <p>More formally, if this DNA contains a mapping from a key
+     * {@code k} to a value {@code v} such that {@code (key==null ? k==null :
+     * key.equals(k))}, then this method returns {@code v}; otherwise
+     * it returns {@code null}.  (There can be at most one such mapping.)
+     * <p>If this DNA permits null values, then a return value of
+     * {@code null} does not <i>necessarily</i> indicate that the DNA
+     * contains no mapping for the key; it's also possible that the DNA
+     * explicitly maps the key to {@code null}.  The {@link #containsKey
+     * containsKey} operation may be used to distinguish these two cases.
+     * @param key the key whose associated value is to be returned
+     * @return the value to which the specified key is mapped, or
+     *         {@code null} if this DNA contains no mapping for the key
+     * @throws ClassCastException if the key is of an inappropriate type for
+     *         this DNA
+     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified key is null and this DNA
+     *         does not permit null keys
+     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     */
+    V getValue(K key);
+
+    // modification Operations
+
+    /**
+     * Associates the specified value with the specified key in this DNA
+     * (optional operation). <tt>true</tt>.
      * @param key key with which the specified value is to be associated
      * @param value value to be associated with the specified key
-     * @return the previous value associated with the specified key, or
-     *         {@code null} if there was no DNAping for the key.
-     *         (A {@code null} return can also indicate that the DNA
-     *         previously associated {@code null} with the key,
-     *         if the implementation supports null values.)
-     * @throws Abort when something is wrong
-     * @throws UnsupportedOperationException if the {@code put} operation
+     * @return the new created mapping
+     * @throws UnsupportedOperationException if the <tt>put</tt> operation
      *         is not supported by this DNA
      * @throws ClassCastException if the class of the specified key or value
      *         prevents it from being stored in this DNA
-     * @throws NullPointerException if the specified key or value is null,
+     * @throws NullPointerException if the specified key or value is null
      *         and this DNA does not permit null keys or values
      * @throws IllegalArgumentException if some property of the specified key
      *         or value prevents it from being stored in this DNA
      */
-     V putIfAbsent(K key, V value);
-
+    void put(K key, V value);
+    
+    
+    // Bulk Operations
     /**
-     * Removes the pair for a key only if currently DNAped to a given value.
-     * This is equivalent to
-     *  <pre> {@code
-     * if (DNA.containsKey(key) && Objects.equals(DNA.get(key), value)) {
-     *   DNA.remove(key);
-     *   return true;
-     * } else
-     *   return false;
-     * }</pre>
+     * Copies all of the mappings from the specified DNA to this DNA
+     * (optional operation).  The effect of this call is equivalent to that
+     * of calling {@link #put(Object,Object) put(k, v)} on this DNA once
+     * for each mapping from key <tt>k</tt> to value <tt>v</tt> in the
+     * specified DNA.  The behavior of this operation is undefined if the
+     * specified DNA is modified while the operation is in progress.
      *
-     * except that the action is performed atomically.
-     *
-     * @implNote This implementation intentionally re-abstracts the
-     * inappropriate default provided in {@code Map}.
-     *
-     * @param key key with which the specified value is associated
-     * @param value value expected to be associated with the specified key
-     * @return {@code true} if the value was removed
-     * @throws UnsupportedOperationException if the {@code remove} operation
+     * @param m mappings to be stored in this DNA
+     * @throws UnsupportedOperationException if the <tt>putAll</tt> operation
      *         is not supported by this DNA
-     * @throws ClassCastException if the key or value is of an inappropriate
-     *         type for this DNA
-     *         (<a href="../Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified key or value is null,
-     *         and this DNA does not permit null keys or values
-     *         (<a href="../Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException if the class of a key or value in the
+     *         specified DNA prevents it from being stored in this DNA
+     * @throws NullPointerException if the specified DNA is null, or if
+     *         this DNA does not permit null keys or values, and the
+     *         specified DNA contains null keys or values
+     * @throws IllegalArgumentException if some property of a key or value in
+     *         the specified DNA prevents it from being stored in this DNA
      */
-     boolean remove(K key, V value);
+    void putAll(Collection<Y> m);
 
     /**
-     * Replaces the pair for a key only if currently DNAped to a given value.
-     * This is equivalent to
-     *  <pre> {@code
-     * if (DNA.containsKey(key) && Objects.equals(DNA.get(key), oldValue)) {
-     *   DNA.put(key, newValue);
-     *   return true;
-     * } else
-     *   return false;
-     * }</pre>
+     * Removes the mapping for a key from this DNA if it is present
+     * (optional operation).   More formally, if this DNA contains a mapping
+     * from key <tt>k</tt> to value <tt>v</tt> such that
+     * <code>(key==null ?  k==null : key.equals(k))</code>, that mapping
+     * is removed.  (The DNA can contain at most one such mapping.)
      *
-     * except that the action is performed atomically.
+     * <p>Returns the value to which this DNA previously associated the key,
+     * or <tt>null</tt> if the DNA contained no mapping for the key.
      *
-     * @implNote This implementation intentionally re-abstracts the
-     * inappropriate default provided in {@code Map}.
+     * <p>If this DNA permits null values, then a return value of
+     * <tt>null</tt> does not <i>necessarily</i> indicate that the DNA
+     * contained no mapping for the key; it's also possible that the DNA
+     * explicitly mapped the key to <tt>null</tt>.
      *
-     * @param key key with which the specified value is associated
-     * @param oldValue value expected to be associated with the specified key
-     * @param newValue value to be associated with the specified key
-     * @return {@code true} if the value was replaced
-     * @throws Abort when something is wrong
-     * @throws UnsupportedOperationException if the {@code put} operation
+     * <p>The DNA will not contain a mapping for the specified key once the
+     * call returns.
+     *
+     * @param key key whose mapping is to be removed from the DNA
+     * @return the previous value associated with <tt>key</tt>, or
+     *         <tt>null</tt> if there was no mapping for <tt>key</tt>.
+     * @throws UnsupportedOperationException if the <tt>remove</tt> operation
      *         is not supported by this DNA
-     * @throws ClassCastException if the class of a specified key or value
-     *         prevents it from being stored in this DNA
-     * @throws NullPointerException if a specified key or value is null,
-     *         and this DNA does not permit null keys or values
-     * @throws IllegalArgumentException if some property of a specified key
-     *         or value prevents it from being stored in this DNA
+     * @throws ClassCastException if the key is of an inappropriate type for
+     *         this DNA
+     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified key is null and this
+     *         DNA does not permit null keys
+     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      */
-    boolean replace(K key, V oldValue, V newValue);
+    void removeByKey(K key);
 
+    // Bulk Operations
     /**
-     * Replaces the pair for a key only if currently DNAped to some value.
-     * This is equivalent to
-     *  <pre> {@code
-     * if (DNA.containsKey(key)) {
-     *   return DNA.put(key, value);
-     * } else
-     *   return null;
-     * }</pre>
+     * Copies all of the mappings from the specified DNA to this DNA
+     * (optional operation).  The effect of this call is equivalent to that
+     * of calling {@link #put(Object,Object) put(k, v)} on this DNA once
+     * for each mapping from key <tt>k</tt> to value <tt>v</tt> in the
+     * specified DNA.  The behavior of this operation is undefined if the
+     * specified DNA is modified while the operation is in progress.
      *
-     * except that the action is performed atomically.
-     *
-     * @implNote This implementation intentionally re-abstracts the
-     * inappropriate default provided in {@code Map}.
-     *
-     * @param key key with which the specified value is associated
-     * @param value value to be associated with the specified key
-     * @return the previous value associated with the specified key, or
-     *         {@code null} if there was no DNAping for the key.
-     *         (A {@code null} return can also indicate that the DNA
-     *         previously associated {@code null} with the key,
-     *         if the implementation supports null values.)
-     * @throws Abort 
-     * @throws UnsupportedOperationException if the {@code put} operation
+     * @param m mappings to be stored in this DNA
+     * @throws UnsupportedOperationException if the <tt>putAll</tt> operation
      *         is not supported by this DNA
-     * @throws ClassCastException if the class of the specified key or value
-     *         prevents it from being stored in this DNA
-     * @throws NullPointerException if the specified key or value is null,
-     *         and this DNA does not permit null keys or values
-     * @throws IllegalArgumentException if some property of the specified key
-     *         or value prevents it from being stored in this DNA
+     * @throws ClassCastException if the class of a key or value in the
+     *         specified DNA prevents it from being stored in this DNA
+     * @throws NullPointerException if the specified DNA is null, or if
+     *         this DNA does not permit null keys or values, and the
+     *         specified DNA contains null keys or values
+     * @throws IllegalArgumentException if some property of a key or value in
+     *         the specified DNA prevents it from being stored in this DNA
      */
-    V replace(K key, V value);
+    void bulk(DNA<? extends K, ? extends V, ? extends Y, ? extends X> m);
 
     /**
-     * {@inheritDoc}
+     * Removes all of the mappings from this DNA (optional operation).
+     * The DNA will be empty after this call returns.
      *
-     * @implSpec
-     * <p>The default implementation is equivalent to, for this {@code DNA}:
-     * <pre> {@code
-     * for ((Map.Entry<K, V> pair : DNA.entrySet())
-     *     do {
-     *        K k = pair.getKey();
-     *        V v = pair.getValue();
-     *     } while(!replace(k, v, function.apply(k, v)));
-     * }</pre>
-     *
-     * The default implementation may retry these steps when multiple
-     * threads attempt updates including potentially calling the function
-     * repeatedly for a given key.
-     *
-     * <p>This implementation assumes that the DNA cannot contain null
-     * values and {@code get()} returning null unambiguously means the key is
-     * absent. Implementations which support null values <strong>must</strong>
-     * override this default implementation.
-     *
-     * @throws UnsupportedOperationException {@inheritDoc}
-     * @throws NullPointerException {@inheritDoc}
-     * @throws ClassCastException {@inheritDoc}
-     * @throws IllegalArgumentException {@inheritDoc}
-     * @since 1.8
+     * @throws UnsupportedOperationException if the <tt>clear</tt> operation
+     *         is not supported by this DNA
      */
-    @Override
-    void replaceAll(BiFunction<? super K, ? super V, ? extends V> function);
-
+    void clear();
+    
     /**
-     * {@inheritDoc}
+     * Returns a {@link Set} view of the mappings contained in this DNA.
+     * The set is backed by the DNA, so changes to the DNA are
+     * reflected in the set, and vice-versa.  If the DNA is modified
+     * while an iteration over the set is in progress (except through
+     * the iterator's own <tt>remove</tt> operation, or through the
+     * <tt>setValue</tt> operation on a DNA mapping returned by the
+     * iterator) the results of the iteration are undefined.  The set
+     * supports element removal, which removes the corresponding
+     * mapping from the DNA, via the <tt>Iterator.remove</tt>,
+     * <tt>Set.remove</tt>, <tt>removeAll</tt>, <tt>retainAll</tt> and
+     * <tt>clear</tt> operations.  It does not support the
+     * <tt>add</tt> or <tt>addAll</tt> operations.
      *
-     * @implSpec
-     * The default implementation is equivalent to the following steps for this
-     * {@code DNA}, then returning the current value or {@code null} if now
-     * absent:
-     *
-     * <pre> {@code
-     * if (DNA.get(key) == null) {
-     *     V newValue = mappingFunction.apply(key);
-     *     if (newValue != null)
-     *         return DNA.putIfAbsent(key, newValue);
-     * }
-     * }</pre>
-     *
-     * The default implementation may retry these steps when multiple
-     * threads attempt updates including potentially calling the mapping
-     * function multiple times.
-     *
-     * <p>This implementation assumes that the DNA cannot contain null
-     * values and {@code get()} returning null unambiguously means the key is
-     * absent. Implementations which support null values <strong>must</strong>
-     * override this default implementation.
-     *
-     * @throws UnsupportedOperationException {@inheritDoc}
-     * @throws ClassCastException {@inheritDoc}
-     * @throws NullPointerException {@inheritDoc}
-     * @since 1.8
+     * @return a set view of the mappings contained in this DNA
      */
-    @Override
-    V computeIfAbsent(K key,
-            Function<? super K, ? extends V> mappingFunction);
-
-    /**
-     * {@inheritDoc}
-     *
-     * @implSpec
-     * The default implementation is equivalent to performing the following
-     * steps for this {@code DNA}, then returning the current value or
-     * {@code null} if now absent. :
-     *
-     * <pre> {@code
-     * if (DNA.get(key) != null) {
-     *     V oldValue = DNA.get(key);
-     *     V newValue = remappingFunction.apply(key, oldValue);
-     *     if (newValue != null)
-     *         DNA.replace(key, oldValue, newValue);
-     *     else
-     *         DNA.remove(key, oldValue);
-     * }
-     * }</pre>
-     *
-     * The default implementation may retry these steps when multiple threads
-     * attempt updates including potentially calling the remapping function
-     * multiple times.
-     *
-     * <p>This implementation assumes that the DNA cannot contain null
-     * values and {@code get()} returning null unambiguously means the key is
-     * absent. Implementations which support null values <strong>must</strong>
-     * override this default implementation.
-     *
-     * @throws UnsupportedOperationException {@inheritDoc}
-     * @throws ClassCastException {@inheritDoc}
-     * @throws NullPointerException {@inheritDoc}
-     * @since 1.8
-     */
-    @Override
-    V computeIfPresent(K key,
-            BiFunction<? super K, ? super V, ? extends V> remappingFunction) ;
-
-    /**
-     * {@inheritDoc}
-     *
-     * @implSpec
-     * The default implementation is equivalent to performing the following
-     * steps for this {@code DNA}, then returning the current value or
-     * {@code null} if absent:
-     *
-     * <pre> {@code
-     * V oldValue = DNA.get(key);
-     * V newValue = remappingFunction.apply(key, oldValue);
-     * if (oldValue != null ) {
-     *    if (newValue != null)
-     *       DNA.replace(key, oldValue, newValue);
-     *    else
-     *       DNA.remove(key, oldValue);
-     * } else {
-     *    if (newValue != null)
-     *       DNA.putIfAbsent(key, newValue);
-     *    else
-     *       return null;
-     * }
-     * }</pre>
-     *
-     * The default implementation may retry these steps when multiple
-     * threads attempt updates including potentially calling the remapping
-     * function multiple times.
-     *
-     * <p>This implementation assumes that the DNA cannot contain null
-     * values and {@code get()} returning null unambiguously means the key is
-     * absent. Implementations which support null values <strong>must</strong>
-     * override this default implementation.
-     *
-     * @throws UnsupportedOperationException {@inheritDoc}
-     * @throws ClassCastException {@inheritDoc}
-     * @throws NullPointerException {@inheritDoc}
-     * @since 1.8
-     */
-    @Override
-    V compute(K key,
-            BiFunction<? super K, ? super V, ? extends V> remappingFunction);
-
-    /**
-     * {@inheritDoc}
-     *
-     * @implSpec
-     * The default implementation is equivalent to performing the following
-     * steps for this {@code DNA}, then returning the current value or
-     * {@code null} if absent:
-     *
-     * <pre> {@code
-     * V oldValue = DNA.get(key);
-     * V newValue = (oldValue == null) ? value :
-     *              remappingFunction.apply(oldValue, value);
-     * if (newValue == null)
-     *     DNA.remove(key);
-     * else
-     *     DNA.put(key, newValue);
-     * }</pre>
-     *
-     * <p>The default implementation may retry these steps when multiple
-     * threads attempt updates including potentially calling the remapping
-     * function multiple times.
-     *
-     * <p>This implementation assumes that the DNA cannot contain null
-     * values and {@code get()} returning null unambiguously means the key is
-     * absent. Implementations which support null values <strong>must</strong>
-     * override this default implementation.
-     *
-     * @throws UnsupportedOperationException {@inheritDoc}
-     * @throws ClassCastException {@inheritDoc}
-     * @throws NullPointerException {@inheritDoc}
-     * @since 1.8
-     */
-    @Override
-    V merge(K key, V value,
-            BiFunction<? super V, ? super V, ? extends V> remappingFunction);
+    Sequence<V,K,X,Y> entrySet();
 }

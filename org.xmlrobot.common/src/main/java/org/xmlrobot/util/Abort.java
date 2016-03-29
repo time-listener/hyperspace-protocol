@@ -6,7 +6,7 @@ package org.xmlrobot.util;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.xmlrobot.genesis.TimeListener;
+import org.xmlrobot.TimeListener;
 
 /**
  * Abort exception implementation class.

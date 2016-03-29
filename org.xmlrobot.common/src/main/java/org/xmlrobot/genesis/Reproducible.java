@@ -3,14 +3,10 @@
  */
 package org.xmlrobot.genesis;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.SortedSet;
 
 /**
+ * 
  * This interface imposes a absolute ordering on the objects of each class that
  * implements it.  This ordering is referred to as the class's <i>natural
  * ordering</i>, and the class's <tt>reproduceTo</tt> method is referred to as
@@ -67,18 +63,19 @@ import java.util.SortedSet;
  * the class's {@link Object#equals(Object) equals(Object)} method:<pre>
  *     {(x, y) such that x.equals(y)}. </pre><p>
  *
- * This interface is a member of the
- * {@code hyperspace congregation framework}.
+ * <p>This interface is a member of the <tt>hyperspace congregation framework</tt></p>.
+ *
+ * @author joan
  *
  * @param <V> the type of objects that this object may be reproduced to
  *
- * @author joan
- * @see org.xmlrobot.genesis.TimeListener.Transmitter
- * @since before BigBang
+ * @see org.xmlrobot.genesis.Reproductor
+ * @see org.xmlrobot.TimeListener.Transmitter
+ * 
  */
-public interface Reproducible<V> extends Output<V>, Comparable<V> {
+public interface Reproducible<V> extends Comparator<V> {
 	
-    /**
+	/**
      * Reproduces this object with the specified object for order.  Returns a
      * negative integer, zero, or a positive integer as this object is less
      * than, equal to, or greater than the specified object.
@@ -118,10 +115,4 @@ public interface Reproducible<V> extends Output<V>, Comparable<V> {
      *         from being reproduced to this object.
      */
 	int reproduceTo(V o);
-	
-	/**
-	 * Returns the result of the reproduction computation.
-	 * @return the result of the reproduction computation.
-	 */
-	V output();
 }

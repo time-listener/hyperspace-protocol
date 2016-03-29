@@ -3,169 +3,1252 @@
  */
 package org.xmlrobot.positron;
 
-import javax.xml.bind.annotation.XmlTransient;
-
-import org.osgi.framework.ServiceEvent;
-import org.xmlrobot.genesis.Mass;
-import org.xmlrobot.space.Space;
-import org.xmlrobot.util.Parity;
-
+import org.xmlrobot.MassListener;
+import org.xmlrobot.TimeListener;
+import org.xmlrobot.horizon.Graviton;
+import org.xmlrobot.horizon.Mass;
+import org.xmlrobot.protocol.Hypermass;
+import org.xmlrobot.util.Commandment;
+import org.xmlrobot.util.Congregation;
+import org.xmlrobot.util.Imperative;
+import org.xmlrobot.util.Instruction;
 
 /**
+ * Positronic brain for Aaron.
+ * 
  * @author joan
  *
  */
-@XmlTransient
-public abstract class Positron<K,V>
-	extends Space<K,V> {
-	
-	/**
-	 * 4469845856208225940L
-	 */
-	private static final long serialVersionUID = 4469845856208225940L;
+public interface Positron<K,V> extends MassRecursion<K,V> {
 
-	/**
-     * {@link Positron} default class constructor.
+    /* (non-Javadoc)
+	 * @see java.lang.Object#clone()
 	 */
-	public Positron() {
-		super();
-	}
+	Positron<K,V> clone();
+    
+    /* (non-Javadoc)
+     * @see org.xmlrobot.genesis.MassListener#dna()
+     */
+    @Override
+    public Hypermass<K,V> dna();    
+    
+    /* (non-Javadoc)
+     * @see org.xmlrobot.genesis.TimeListener#matrix()
+     */
+    @Override
+    Positron.Transmuter<K,V> matrix();
+    
 	/**
-	 * {@link Positron} default class constructor.
-	 * @param type the inherited type
-	 */
-	public Positron(Class<? extends Mass<K,V>> type) {
-		super(type, Parity.YY);
-	}
+     * Mass transmutation implementation interface.
+     * @author joan
+     *
+     * @param <K> is the key
+     * @param <V> is the value
+     */
+    interface Transmuter<K,V> 
+    	extends TimeListener.Transmitter<Positron<K,V>,Positron<V,K>> {
+    	
+    	/**
+    	 * Creates new mass.
+    	 * @param key is the key
+    	 * @param value is the value
+    	 */
+    	void put(K key, V value);
+    }
+    
+    /**
+     * Returns <tt>true</tt> if this mass contains a positron for the specified
+     * event.  More formally, returns <tt>true</tt> if and only if
+     * this mass contains a positron for an event <tt>k</tt> such that
+     * <tt>(event==null ? k==null : event.equals(k))</tt>.  (There can be
+     * at most one such positron.)
+     * 
+     * @param event event whose presence in this mass is to be tested
+     * @return <tt>true</tt> if this mass contains a positron for the specified event
+     * @throws ClassCastException if the event is of an inappropriate type for this mass
+     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified event is null and this mass does not permit null events
+     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     */
+    boolean containsPositive(MassListener sender, Mass<K> event);
 
-	/**
-	 * {@link Positron} class constructor.
-	 * @param type the inherited type
-	 */
-	public Positron(Class<? extends Mass<K,V>> type, 
-			K key, V value) {
-		super(type, key, value, Parity.YY);
-	}
-	/**
-	 * {@link Positron} class constructor.
-	 * @param type the inherited type
-	 * @param key {@link String} the key
-	 * @param value {@link Object} the value
-	 * @param parent the parent of inheritance
-	 */
-	public Positron(Class<? extends Mass<K,V>> type, 
-			K key, V value, Mass<K,V> parent) {
-		super(type, key, value, parent);
-	}
-	/**
-	 * {@link Positron} class constructor.
-	 * @param type the inherited type
-	 * @param antitype the inherited antitype
-	 */
-	public Positron(Class<? extends Mass<K,V>> type, Class<? extends Mass<V,K>> antitype) {
-		super(type, antitype, Parity.YY);
-	}
+    /**
+     * Returns <tt>true</tt> if this mass unifies one or more opposites to the
+     * specified event.  More formally, returns <tt>true</tt> if and only if
+     * this mass contains at least one positron to a event <tt>n</tt> such that
+     * <tt>(event==null ? n==null : event.equals(n))</tt>.  This operation
+     * will probably require time linear in the mass depth for most
+     * implementations of the <tt>Positron</tt> interface.
+     *
+     * @param event event whose presence in this mass is to be tested
+     * @return <tt>true</tt> if this mass unifies one or more opposites to the specified event
+     * @throws ClassCastException if the event is of an inappropriate type for this map
+     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified event is null and this mass does not permit null events
+     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     */
+    boolean containsNegative(MassListener sender, Mass<V> event);
+    
+    /**
+     * Attempts to compute a positron for the specified event and its current
+     * unified antievent (or {@code null} if there is no current positron). For
+     * example, to either create or append a {@code String} msg to an antievent
+     * positron:
+     *
+     * <pre> {@code
+     * mass.compute(event, (k, v) -> (v == null) ? msg : v.concat(msg))}</pre>
+     * (Method {@link #merge merge()} is often simpler to use for such purposes.)
+     *
+     * <p>If the function returns {@code null}, the positron is removed (or
+     * remains absent if initially absent).  If the function itself throws an
+     * (unchecked) exception, the exception is rethrown, and the current positron
+     * is left unchanged.
+     *
+     * @implSpec
+     * The default implementation is equivalent to performing the following
+     * steps for this {@code mass}, then returning the current antievent or
+     * {@code null} if absent:
+     *
+     * <pre> {@code
+     * V oldAntievent = mass.getNegative(root(), event);
+     * V newAntievent = unificationFunction.apply(event.getSource(), oldAntievent);
+     * if (oldAntievent != null ) {
+     *    if (newAntievent != null)
+     *       mass.putNegative(root(), event, new Boson<V>(newAntievent));
+     *    else
+     *       mass.removeByPositive(event);
+     * } else {
+     *    if (newAntievent != null)
+     *       mass.putNegative(root(), event, newAntievent);
+     *    else
+     *       return null;
+     * }
+     * }</pre>
+     *
+     * <p>The default implementation makes total guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties. In particular, all implementations of
+     * subinterface {@link java.util.concurrent.Concurrentmass} must document
+     * whether the function is applied once atomically only if the antievent is not
+     * present.
+     *
+     * @param event event with which the specified antievent is to be associated
+     * @param unificationFunction the function to compute a antievent
+     * @return the new antievent associated with the specified event, or null if none
+     * @throws NullPointerException if the specified event is null and
+     *         this mass does not support null events, or the
+     *         unificationFunction is null
+     * @throws UnsupportedOperationException if the {@code put} operation
+     *         is not supported by this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException if the class of the specified event or antievent
+     *         prevents it from being stored in this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @since 1.8
+     */
+    void computeNegative(MassListener sender, Mass<K> event, Commandment<K,V> unificationFunction);
+    
+    /**
+     * If the specified event is not already associated with a antievent (or is unified
+     * to {@code null}), attempts to compute its antievent using the given positron
+     * function and enters it into this mass unless {@code null}.
+     *
+     * <p>If the function returns {@code null} no positron is recorded. If
+     * the function itself throws an (unchecked) exception, the
+     * exception is rethrown, and no positron is recorded.  The most
+     * common usage is to construct a new object serving as an initial
+     * unified antievent or memorized result, as in:
+     *
+     * <pre> {@code
+     * mass.computeIfAbsent(event, k -> new antievent(f(k)));
+     * }</pre>
+     *
+     * <p>Or to implement a multi-antievent mass, {@code mass<K,Collection<V>>},
+     * supporting multiple antievents per event:
+     *
+     * <pre> {@code
+     * mass.computeIfAbsent(event, k -> new HashSet<V>()).add(v);
+     * }</pre>
+     *
+     *
+     * @implSpec
+     * The default implementation is equivalent to the following steps for this
+     * {@code mass}, then returning the current antievent or {@code null} if now
+     * absent:
+     *
+     * <pre> {@code
+     * if (mass.getNegative(event) == null) {
+     *     V newAntievent = positronFunction.apply(event);
+     *     if (newAntievent != null)
+     *         mass.putNegative(event, newAntievent);
+     * }
+     * }</pre>
+     *
+     * <p>The default implementation makes no guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties. In particular, all implementations of
+     * subinterface {@link java.util.concurrent.Concurrentmass} must document
+     * whether the function is applied once atomically only if the antievent is not
+     * present.
+     *
+     * @param event event with which the specified antievent is to be associated
+     * @param positronFunction the function to compute a antievent
+     * @return the current (existing or computed) antievent associated with
+     *         the specified event, or null if the computed antievent is null
+     * @throws NullPointerException if the specified event is null and
+     *         this mass does not support null events, or the positronFunction
+     *         is null
+     * @throws UnsupportedOperationException if the {@code put} operation
+     *         is not supported by this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException if the class of the specified event or antievent
+     *         prevents it from being stored in this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @since 1.8
+     */
+    void computeNegativeIfAbsent(MassListener sender, Mass<K> event, Instruction<K,V> positronFunction);
 
+    /**
+     * Attempts to compute a positron for the specified event and its current
+     * unified antievent (or {@code null} if there is no current positron). For
+     * example, to either create or append a {@code String} msg to an antievent
+     * positron:
+     *
+     * <pre> {@code
+     * mass.compute(event, (k, v) -> (v == null) ? msg : v.concat(msg))}</pre>
+     * (Method {@link #merge merge()} is often simpler to use for such purposes.)
+     *2q!
+     * <p>If the function returns {@code null}, the positron is removed (or
+     * remains absent if initially absent).  If the function itself throws an
+     * (unchecked) exception, the exception is rethrown, and the current positron
+     * is left unchanged.
+     *
+     * @implSpec
+     * The default implementation is equivalent to performing the following
+     * steps for this {@code mass}, then returning the current antievent or
+     * {@code null} if absent:
+     *
+     * <pre> {@code
+     * K oldKey = mass.getKey(event);
+     * K newKey = unificationFunction.apply(event, oldKey);
+     * if (oldKey != null ) {
+     *    if (newKey != null)
+     *       mass.putKey(event, newKey);
+     *    else
+     *       mass.removeByValue(event);
+     * } else {
+     *    if (newKey != null)
+     *       mass.putKey(event, newKey);
+     *    else
+     *       return null;
+     * }
+     * }</pre>
+     *
+     * <p>The default implementation makes no guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties. In particular, all implementations of
+     * subinterface {@link java.util.concurrent.Concurrentmass} must document
+     * whether the function is applied once atomically only if the antievent is not
+     * present.
+     *
+     * @param event event with which the specified antievent is to be associated
+     * @param unificationFunction the function to compute an antievent
+     * @return the new antievent associated with the specified event, or null if none
+     * @throws NullPointerException if the specified event is null and
+     *         this mass does not support null antievents, or the
+     *         unificationFunction is null
+     * @throws UnsupportedOperationException if the {@code put} operation
+     *         is not supported by this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException if the class of the specified event or antievent
+     *         prevents it from being stored in this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @since 2
+     */
+    void computePositive(MassListener sender, Mass<V> event, 
+    		Commandment<V,K> unificationFunction);
+    
+    /**
+     * If the specified event is not already associated with an antievent (or is unified
+     * to {@code null}), attempts to compute its antievent using the given positron
+     * function and enters it into this mass unless {@code null}.
+     *
+     * <p>If the function returns {@code null} no positron is recorded. If
+     * the function itself throws an (unchecked) exception, the
+     * exception is rethrown, and no positron is recorded.  The most
+     * common usage is to construct a new object serving as an initial
+     * unified antievent or memorized result, as in:
+     *
+     * <pre> {@code
+     * mass.computePositiveIfAbsent(event, k -> new antievent(f(k)));
+     * }</pre>
+     *
+     * <p>Or to implement a multi-antievent mass, {@code mass<K,Collection<V>>},
+     * supporting multiple events per event:
+     *
+     * <pre> {@code
+     * mass.computePositiveIfAbsent(event, k -> new HashSet<V>()).add(v);
+     * }</pre>
+     *
+     *
+     * @implSpec
+     * The default implementation is equivalent to the following steps for this
+     * {@code mass}, then returning the current antievent or {@code null} if now
+     * absent:
+     *
+     * <pre> {@code
+     * if (mass.getKey(event) == null) {
+     *     V newValue = positronFunction.apply(event);
+     *     if (newValue != null)
+     *         mass.putKey(event, newKey);
+     * }
+     * }</pre>
+     *
+     * <p>The default implementation makes no guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties. In particular, all implementations of
+     * subinterface {@link java.util.concurrent.Concurrentmass} must document
+     * whether the function is applied once atomically only if the antievent is not
+     * present.
+     *
+     * @param event event with which the specified antievent is to be associated
+     * @param positronFunction the function to compute an antievent
+     * @return the current (existing or computed) antievent associated with
+     *         the specified event, or null if the computed antievent is null
+     * @throws NullPointerException if the specified event is null and
+     *         this mass does not support null antievents, or the positronFunction
+     *         is null
+     * @throws UnsupportedOperationException if the {@code put} operation
+     *         is not supported by this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException if the class of the specified event or antievent
+     *         prevents it from being stored in this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @since 2
+     */
+    void computePositiveIfAbsent(MassListener sender, Mass<V> event, 
+    		Instruction<V,K> positronFunction);
+    
+    /**
+     * Performs the given event for each mass in this mass until all mass
+     * has been processed or the event throws an exception.   Unless
+     * otherwise specified by the implementing class, events are performed in
+     * the order of mass set iteration (if an iteration order is specified.)
+     * Exceptions thrown by the event are relayed to the caller.
+     *
+     * @implSpec
+     * The default implementation is equivalent to, for this {@code mass}:
+     * <pre> {@code
+     * for (Positron<K,V> p : mass)
+     *     event.accept(p.getKey(), p.getNegative());
+     * }</pre>
+     *
+     * The default implementation makes no guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties.
+     *
+     * @param event The event to be performed for each mass
+     * @throws NullPointerException if the specified event is null
+     * @throws ConcurrentModificationException if an mass is found to be
+     * removed during iteration
+     * @since 2
+     */
+    void forEachNegative(MassListener sender, Imperative<V,K> event);
+    
+    /**
+     * Performs the given action for each mass in this mass until all mass
+     * have been processed or the action throws an exception.   Unless
+     * otherwise specified by the implementing class, actions are performed in
+     * the order of mass set iteration (if an iteration order is specified.)
+     * Exceptions thrown by the action are relayed to the caller.
+     *
+     * @implSpec
+     * The default implementation is equivalent to, for this {@code mass}:
+     * <pre> {@code
+     * for (mass.mass<K, V> mass : mass.entrySet())
+     *     action.accept(mass.getPositive(), mass.getNegative());
+     * }</pre>
+     *
+     * The default implementation makes no guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties.
+     *
+     * @param event The action to be performed for each mass
+     * @throws NullPointerException if the specified action is null
+     * @throws ConcurrentModificationException if an mass is found to be
+     * removed during iteration
+     * @since 1.8
+     */
+    void forEachPositive(MassListener sender, Imperative<K,V> event);
+    
 	/**
-	 * {@link Positron} class constructor.
-	 * @param type the inherited type
-	 * @param antitype the inherited antitype
-	 * @param key {@link String} the key
-	 * @param value {@link Object} the value
+	 * Inquires the inheritance for matching a positron.
+	 * Return null if positron hasn't been found.
+	 * @param event the antievent of the process that you're looking for.
 	 */
-	public Positron(Class<? extends Mass<K,V>> type, Class<? extends Mass<V,K>> antitype, 
-			K key, V value) {
-		// call constructor
-		super(type, antitype, key, value, Parity.YY);
-	}
+	Graviton<V,K> getByNegative(MassListener sender, Mass<V> event);
+    
+    /**
+	 * Inquires the inheritance for matching a particle.
+	 * @param event the event of the process that you're looking for
+	 * @return null if positron hasn't been found
+	 */
+	Graviton<K,V> getByPositive(MassListener sender, Mass<K> event);
+    
+    /**
+     * Returns the antievent to which the specified event is unified,
+     * or {@code null} if this mass contains no positron for the event.
+     *
+     * <p>More formally, if this mass contains a positron from an event
+     * {@code k} to a antievent {@code v} such that {@code (event==null ? k==null :
+     * event == k)}, then this method returns {@code v}; otherwise
+     * it returns {@code null}.  (There can be at most one such positron.)
+     *
+     * <p>If this mass permits null antievents, then a return antievent of
+     * {@code null} does not <i>necessarily</i> indicate that the mass
+     * contains no positron for the event; it's also possible that the mass
+     * explicitly unifies the event to {@code null}.  The {@link #containsPositive
+     * containsPositive} operation may be used to distinguish these two cases.
+     *
+     * @param event the event whose associated antievent is to be returned
+     * @return the antievent to which the specified event is unified, or
+     *         {@code null} if this mass contains no positron for the event
+     * @throws ClassCastException if the event is of an inappropriate type for
+     *         this mass
+     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified event is null and this map
+     *         does not permit null events
+     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     */
+    Mass<V> getNegative(MassListener sender, Mass<K> event);
+    
+    /**
+     * Returns the antievent to which the specified event is unified, or
+     * {@code defaultNegative} if this mass contains no positron for the event.
+     *
+     * @implSpec
+     * The default implementation makes no guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties.
+     *
+     * @param event the event whose associated antievent is to be returned
+     * @param defaultAntievent the default positron of the event
+     * @return the antievent to which the specified event is unified, or
+     * {@code defaultNegative} if this mass contains no positron for the event
+     * @throws ClassCastException if the event is of an inappropriate type for
+     * this mass
+     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified event is null and this mass
+     * does not permit null events
+     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @since 1.8
+     */
+    Mass<V> getNegativeOrDefault(MassListener sender, Mass<K> event, Mass<V> defaultAntievent);
+   
+    /**
+     * Returns the antievent to which the specified event is unified,
+     * or {@code null} if this mass contains no positron for the event.
+     *
+     * <p>More formally, if this mass contains a positron from a event
+     * {@code k} to a antievent {@code v} such that {@code (event==null ? k==null :
+     * event == k)}, then this method returns {@code v}; otherwise
+     * it returns {@code null}.  (There can be at most one such positron.)
+     *
+     * <p>If this mass permits null opposites, then a return antievent of
+     * {@code null} does not <i>necessarily</i> indicate that the mass
+     * contains no positron for the event; it's also possible that the mass
+     * explicitly unifies the event to {@code null}.  The {@link #containsKey
+     * containsKey} operation may be used to distinguish these two cases.
+     *
+     * @param event the event whose associated antievent is to be returned
+     * @return the antievent to which the specified event is unified, or
+     *         {@code null} if this mass contains no positron for the event
+     * @throws ClassCastException if the event is of an inappropriate type for
+     *         this mass
+     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified event is null and this map
+     *         does not permit null opposites
+     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     */
+    Mass<K> getPositive(MassListener sender, Mass<V> event);
+
+    /**
+     * Returns the antievent to which the specified event is unified, or
+     * {@code default-antievent} if this mass contains no positron for the event.
+     *
+     * @implSpec
+     * The default implementation makes total guarantees about synchronization
+     * or atomicity properties of this method. Any implementation not providing
+     * atomicity guarantees must override this method and document its
+     * recurrency properties.
+     *
+     * @param event the event whose associated antievent is to be returned
+     * @param defaultAntievent the default positron of the event
+     * @return the antievent to which the specified event is unified, or
+     * {@code default-antievent} if this mass contains no positron for the event
+     * @throws ClassCastException if the event is of an inappropriate type for
+     * this mass
+     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified event is null and this mass
+     * does not permit null antievents
+     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @since 1.8
+     */
+    Mass<K> getPositiveOrDefault(MassListener sender, Mass<V> event, Mass<K> defaultAntievent);
+    
+    /**
+     * If the specified event is not already associated with an event or is
+     * associated with null, associates it with the given non-null event.
+     * Otherwise, replaces the associated event with the results of the given
+     * unification function, or removes if the result is {@code null}. This
+     * method may be of use when combining multiple unified antievents for an event.
+     * For example, to either create or append a {@code String msg} to a
+     * event positron:
+     *
+     * <pre> {@code
+     * mass.merge(event, msg, String::concat)
+     * }</pre>
+     *
+     * <p>If the function returns {@code null} the positron is removed.  If the
+     * function itself throws an (unchecked) exception, the exception is
+     * rethrown, and the current positron is left unchanged.
+     *
+     * @implSpec
+     * The default implementation is equivalent to performing the following
+     * steps for this {@code mass}, then returning the current event or
+     * {@code null} if absent:
+     *
+     * <pre> {@code
+     * V oldAntievent = mass.getNegative(root(), event).getSource();
+     * V newAntievent = (oldAntievent == null) ? event.getSource() :
+     *              unificationFunction.apply(oldAntievent.getSource(), event.getSource());
+     * if (newAntievent == null)
+     *     mass.removeByPositive(root(), event);
+     * else
+     *     mass.putNegative(root(), event, newAntievent);
+     * }</pre>
+     *
+     * <p>The default implementation makes no guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties. In particular, all implementations of
+     * subinterface {@link java.util.concurrent.Concurrentmass} must document
+     * whether the function is applied once atomically only if the event is not
+     * present.
+     *
+     * @param event event with which the resulting event is to be associated
+     * @param antievent the non-null antievent to be merged with the existing event
+     *        associated with the event or, if no existing event or a null event
+     *        is associated with the event, to be associated with the event
+     * @param unificationFunction the function to recompute an event if present
+     * @return the new event associated with the specified event, or null if no
+     *         event is associated with the event
+     * @throws UnsupportedOperationException if the {@code put} operation
+     *         is not supported by this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException if the class of the specified event or event
+     *         prevents it from being stored in this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified event is null and this mass
+     *         does not support null events or the event or unificationFunction is
+     *         null
+     * @since 1.8
+     */
+    void mergeNegative(MassListener sender, Mass<K> event, Mass<V> antievent, Commandment<V,V> unificationFunction);
+    
+    /**
+     * If the specified event is not already associated with an antievent or is
+     * associated with null, associates it with the given non-null antievent.
+     * Otherwise, replaces the associated antievent with the results of the given
+     * unification function, or removes if the result is {@code null}. This
+     * method may be of use when combining multiple unified events for a event.
+     * For example, to either create or append a {@code String msg} to a
+     * antievent positron:
+     *
+     * <pre> {@code
+     * mass.mergePositive(event, msg, String::concat)
+     * }</pre>
+     *
+     * <p>If the function returns {@code null} the positron is removed.  If the
+     * function itself throws an (unchecked) exception, the exception is
+     * rethrown, and the current positron is left unchanged.
+     *
+     * @implSpec
+     * The default implementation is equivalent to performing the following
+     * steps for this {@code mass}, then returning the current antievent or
+     * {@code null} if absent:
+     *
+     * <pre> {@code
+     * K oldKey = mass.getKey(event);
+     * K newKey = (oldValue == null) ? antievent :
+     *              unificationFunction.apply(oldKey, event);
+     * if (newValue == null)
+     *     mass.removeByValue(event);
+     * else
+     *     mass.putKey(event, newKey);
+     * }</pre>
+     *
+     * <p>The default implementation makes no guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties. In particular, all implementations of
+     * subinterface {@link java.util.concurrent.Concurrentmass} must document
+     * whether the function is applied once atomically only if the antievent is not
+     * present.
+     *
+     * @param event event with which the resulting antievent is to be associated
+     * @param antievent the non-null antievent to be merged with the existing antievent
+     *        associated with the event or, if no existing antievent or a null antievent
+     *        is associated with the event, to be associated with the event
+     * @param unificationFunction the function to recompute an antievent if present
+     * @return the new antievent associated with the specified event, or null if no
+     *         antievent is associated with the event
+     * @throws UnsupportedOperationException if the {@code put} operation
+     *         is not supported by this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException if the class of the specified event or antievent
+     *         prevents it from being stored in this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified event is null and this mass
+     *         does not support null events  or the antievent or unificationFunction is
+     *         null
+     * @since 2
+     */
+    void mergePositive(MassListener sender, Mass<V> event, Mass<K> antievent,
+    		Commandment<K,K> unificationFunction) ;
+    
+    /**
+     * Copies all of the positrons from the specified mass to this mass
+     * (optional operation).  The effect of this call is equivalent to that
+     * of calling {@link #assignNegative(MassListener,Object,Object) put(r, k, v)} on this mass once
+     * for each positron from event <tt>k</tt> to antievent <tt>v</tt> in the
+     * specified mass.  The behavior of this operation is undefined if the
+     * specified mass is modified while the operation is in progress.
+     *
+     * @param g positrons to be stored in this mass
+     * @throws UnsupportedOperationException if the <tt>putAll</tt> operation
+     *         is not supported by this mass
+     * @throws ClassCastException if the class of a event or antievent in the
+     *         specified mass prevents it from being stored in this mass
+     * @throws NullPointerException if the specified mass is null, or if
+     *         this mass does not permit null events or antievents, and the
+     *         specified mass contains null events or antievents
+     * @throws IllegalArgumentException if some property of a event or antievent in
+     *         the specified mass prevents it from being stored in this mass
+     */
+    void putAllNegatives(Congregation<Positron<K,V>> c);
+    
 	/**
-	 * {@link Positron} class constructor.
-	 * @param type the inherited type
-	 * @param antitype the inherited antitype
-	 * @param key the key
-	 * @param value the value
-	 * @param parent {@link Positron} the parent
-	 */
-	public Positron(Class<? extends Mass<K,V>> type, Class<? extends Mass<V,K>> antitype, 
-			K key, V value, Mass<K,V> parent) {
-		super(type, antitype, key, value, parent);
-	}
+     * Copies all of the positrons from the specified mass to this mass
+     * (optional operation).  The effect of this call is equivalent to that
+     * of calling {@link #setNegative(Object,Object,Object) put(r, k, v)} on this mass once
+     * for each positron from opposites <tt>k</tt> to event <tt>v</tt> in the
+     * specified mass.  The behavior of this operation is undefined if the
+     * specified mass is modified while the operation is in progress.
+     *
+     * @param m positrons to be stored in this mass
+     * @throws UnsupportedOperationException if the <tt>putAll</tt> operation
+     *         is not supported by this mass
+     * @throws ClassCastException if the class of a opposites or event in the
+     *         specified mass prevents it from being stored in this mass
+     * @throws NullPointerException if the specified mass is null, or if
+     *         this mass does not permit null opposites or events, and the
+     *         specified mass contains null opposites or events
+     * @throws IllegalArgumentException if some property of a opposites or event in
+     *         the specified mass prevents it from being stored in this mass
+     */
+    void putAllPositives(Congregation<Positron<V,K>> m);
 
+    // Modification Operations
+    /**
+     * Associates the specified antievent with the specified event in this mass
+     * (optional operation).  If the mass previously contained a positron for
+     * the event, the old antievent is replaced by the specified antievent.  (A mass
+     * <tt>a</tt> is said to contain a positron for a event <tt>k</tt> if and only
+     * if {@link #containsPositive(Object) m.containsPositive(k)} would return
+     * <tt>true</tt>.)
+     *
+     * @param event event with which the specified antievent is to be associated
+     * @param antievent antievent to be associated with the specified event
+     * @return the previous antievent associated with <tt>event</tt>, or
+     *         <tt>null</tt> if there was no positron for <tt>event</tt>.
+     *         (A <tt>null</tt> return can also indicate that the mass
+     *         previously associated <tt>null</tt> with <tt>event</tt>,
+     *         if the implementation supports <tt>null</tt> antievents.)
+     * @throws UnsupportedOperationException if the <tt>put</tt> operation
+     *         is not supported by this mass
+     * @throws ClassCastException if the class of the specified event or antievent
+     *         prevents it from being stored in this mass
+     * @throws NullPointerException if the specified event or antievent is null
+     *         and this mass does not permit null events or antievents
+     * @throws IllegalArgumentException if some property of the specified event
+     *         or antievent prevents it from being stored in this mass
+     */
+    void putNegative(MassListener sender, Graviton<K,V> event);
+    
+    /**
+     * Associates the specified antievent with the specified event in this mass
+     * (optional operation).  If the mass previously contained a positron for
+     * the event, the old antievent is replaced by the specified antievent.  (A mass
+     * <tt>a</tt> is said to contain a positron for a event <tt>k</tt> if and only
+     * if {@link #containsPositive(Object) m.containsPositive(k)} would return
+     * <tt>true</tt>.)
+     *
+     * @param event event with which the specified antievent is to be associated
+     * @param antievent antievent to be associated with the specified event
+     * @return the previous antievent associated with <tt>event</tt>, or
+     *         <tt>null</tt> if there was no positron for <tt>event</tt>.
+     *         (A <tt>null</tt> return can also indicate that the mass
+     *         previously associated <tt>null</tt> with <tt>event</tt>,
+     *         if the implementation supports <tt>null</tt> antievents.)
+     * @throws UnsupportedOperationException if the <tt>put</tt> operation
+     *         is not supported by this mass
+     * @throws ClassCastException if the class of the specified event or antievent
+     *         prevents it from being stored in this mass
+     * @throws NullPointerException if the specified event or antievent is null
+     *         and this mass does not permit null events or antievents
+     * @throws IllegalArgumentException if some property of the specified event
+     *         or antievent prevents it from being stored in this mass
+     */
+    void putNegative(MassListener sender, Mass<K> event, Mass<V> antievent);
 
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.hyperspace.Abstraction#serviceChanged(org.osgi.framework.ServiceEvent)
-	 */
-	@Override
-	public void serviceChanged(ServiceEvent event) {
-		return;
-	}
-	/* (non-Javadoc)
-	 * @see org.xmlrobot.Hypergenesis#matrix()
-	 */
-	@Override
-	public Mass.Transmuter<K,V> matrix() {
-
-		Mass.Transmuter<K,V> m;
- 		return (m = (Mass.Transmuter<K,V>) matrix) != null ? 
- 				m : (Mass.Transmuter<K,V>) (matrix = new Quantum());
-	}
-	
+    /**
+     * If the specified event is not already associated with a antievent (or is unified
+     * to {@code null}) associates it with the given antievent and returns
+     * {@code null}, else returns the current antievent.
+     *
+     * @implSpec
+     * The default implementation is equivalent to, for this {@code
+     * mass}:
+     *
+     * <pre> {@code
+     * V v = mass.getNegative(event);
+     * if (v == null)
+     *     v = mass.putNegative(event, antievent);
+     *
+     * return v;
+     * }</pre>
+     *
+     * <p>The default implementation makes no guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties.
+     *
+     * @param event event with which the specified antievent is to be associated
+     * @param antievent antievent to be associated with the specified event
+     * @return the previous antievent associated with the specified event, or
+     *         {@code null} if there was no positron for the event.
+     *         (A {@code null} return can also indicate that the mass
+     *         previously associated {@code null} with the event,
+     *         if the implementation supports null antievents.)
+     * @throws UnsupportedOperationException if the {@code put} operation
+     *         is not supported by this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException if the event or antievent is of an inappropriate
+     *         type for this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified event or antievent is null,
+     *         and this mass does not permit null events or antievents
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws IllegalArgumentException if some property of the specified event
+     *         or antievent prevents it from being stored in this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @since 1.8
+     */
+    void putNegativeIfAbsent(MassListener sender, Mass<K> event, Mass<V> antievent);
+    
+    /**
+     * Associates the specified event with the specified antievent in this mass
+     * (optional operation).  If the mass previously contained a positron for
+     * the antievent, the old event is replaced by the specified event.  (A mass
+     * <tt>v</tt> is said to contain a positron for an antievent <tt>k</tt> if and only
+     * if {@link #containsNegative(v) m.containsPositive(k)} would return
+     * <tt>true</tt>.)
+     *
+     * @param event event with which the specified event is to be associated
+     * @param antievent event to be associated with the specified antievent
+     * @return the previous event associated with <tt>antievent</tt>, or
+     *         <tt>null</tt> if there was no positron for <tt>antievent</tt>.
+     *         (A <tt>null</tt> return can also indicate that the mass
+     *         previously associated <tt>null</tt> with <tt>antievent</tt>,
+     *         if the implementation supports <tt>null</tt> events.)
+     * @throws UnsupportedOperationException if the <tt>put</tt> operation
+     *         is not supported by this mass
+     * @throws ClassCastException if the class of the specified antievent or event
+     *         prevents it from being stored in this mass
+     * @throws NullPointerException if the specified antievent or event is null
+     *         and this mass does not permit null opposites or events
+     * @throws IllegalArgumentException if some property of the specified antievent
+     *         or event prevents it from being stored in this mass
+     */
+    void putPositive(MassListener sender, Graviton<V,K> event);
+    
+    /**
+     * Associates the specified event with the specified antievent in this mass
+     * (optional operation).  If the mass previously contained a positron for
+     * the antievent, the old event is replaced by the specified event.  (A mass
+     * <tt>v</tt> is said to contain a positron for an antievent <tt>k</tt> if and only
+     * if {@link #containsNegative(v) m.containsPositive(k)} would return
+     * <tt>true</tt>.)
+     *
+     * @param event event with which the specified event is to be associated
+     * @param antievent event to be associated with the specified antievent
+     * @return the previous event associated with <tt>antievent</tt>, or
+     *         <tt>null</tt> if there was no positron for <tt>antievent</tt>.
+     *         (A <tt>null</tt> return can also indicate that the mass
+     *         previously associated <tt>null</tt> with <tt>antievent</tt>,
+     *         if the implementation supports <tt>null</tt> events.)
+     * @throws UnsupportedOperationException if the <tt>put</tt> operation
+     *         is not supported by this mass
+     * @throws ClassCastException if the class of the specified antievent or event
+     *         prevents it from being stored in this mass
+     * @throws NullPointerException if the specified antievent or event is null
+     *         and this mass does not permit null opposites or events
+     * @throws IllegalArgumentException if some property of the specified antievent
+     *         or event prevents it from being stored in this mass
+     */
+    void putPositive(MassListener sender, Mass<V> event, Mass<K> antievent);
+    
+    /**
+     * If the specified event is not already associated with an antievent (or is unified
+     * to {@code null}) associates it with the given antievent and returns
+     * {@code null}, else returns the current antievent.
+     *
+     * @implSpec
+     * The default implementation is equivalent to, for this {@code
+     * mass}:
+     *
+     * <pre> {@code
+     * K k = mass.getPositive(root(), event);
+     * if (k == null)
+     *     k = mass.putPositive(root(), event, antievent);
+     *
+     * return k;
+     * }</pre>
+     *
+     * <p>The default implementation makes no guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties.
+     *
+     * @param event event with which the specified antievent is to be associated
+     * @param antievent antievent to be associated with the specified event
+     * @return the previous antievent associated with the specified event, or
+     *         {@code null} if there was no positron for the event.
+     *         (A {@code null} return can also indicate that the mass
+     *         previously associated {@code null} with the event,
+     *         if the implementation supports null events.)
+     * @throws UnsupportedOperationException if the {@code put} operation
+     *         is not supported by this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException if the event or antievent is of an inappropriate
+     *         type for this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified event or antievent is null,
+     *         and this mass does not permit null antievents or events
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws IllegalArgumentException if some property of the specified event
+     *         or antievent prevents it from being stored in this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @since 2
+     */
+    void putPositiveIfAbsent(MassListener sender, Mass<V> event, Mass<K> antievent) ;
+    
+    /**
+     * Removes the mass for the specified event only if it is currently
+     * unified to the specified antievent.
+     *
+     * @implSpec
+     * The default implementation is equivalent to, for this {@code mass}:
+     *
+     * <pre> {@code
+     * if (mass.containsPositive(event.getSource()) && 
+     * 	   Objects.equals(mass.getPositive(event.getSource()), antievent)) {
+     *     mass.removeByNegative(root(), event, antievent);
+     *     return true;
+     * } else
+     *     return false;
+     * }</pre>
+     *
+     * <p>The default implementation makes no guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties.
+     *
+     * @param event event with which the specified antievent is associated
+     * @param antievent antievent expected to be associated with the specified event
+     * @return {@code true} if the antievent was removed
+     * @throws UnsupportedOperationException if the {@code remove} operation
+     *         is not supported by this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException if the event or antievent is of an inappropriate
+     *         type for this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified event or antievent is null,
+     *         and this mass does not permit null antievents or events
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @since 2
+     */
+    void removeNegative(MassListener sender, Mass<V> event);
+    
 	/**
-	 * Quantum mechanics including quantum field theory, is a fundamental branch of physics 
-	 * concerned with processes involving, for example, atoms and photons. In such processes, 
-	 * said to be quantized, the action has been observed to be only in integer multiples of 
-	 * the Planck constant, a physical quantity that is exceedingly, indeed perhaps ultimately, 
-	 * small. This is utterly inexplicable in classical physics. Quantum mechanics gradually 
-	 * arose from TimeListener's solution in 1900 to the black-body radiation problem and TimeListener's 
-	 * 1905 paper which offered a quantum-based theory to explain the photoelectric effect. 
-	 * Early quantum theory was profoundly reconceived in the mid-1920s. The reconceived 
-	 * theory is formulated in various specially developed mathematical formalisms. In one of them, 
-	 * a mathematical function, the wave function, provides information about the probability 
-	 * amplitude of position, momentum, and other physical properties of a particle.
-	 * @author joan
-	 *
-	 */
-	protected class Quantum 
-		extends Comparator
-			implements Mass.Transmuter<K,V> {
-		
-		/**
-		 * 
-		 */
-		public Quantum() {
-			super();
-		}
-		
-		/* (non-Javadoc)
-		 * @see org.xmlrobot.Hypergenesis.Comparator#reproduce(org.xmlrobot.genesis.TimeListener, org.xmlrobot.genesis.TimeListener)
-		 */
-		@Override
-		public int reproduce(Mass<K,V> key, Mass<V,K> value) {
-			int cmp = super.reproduce(key, value);
-			
-			if(key.getGen().equals(Parity.XY) ? cmp > 0 : cmp < 0) {
-				put(value.getValue(), value.getKey());
-				return -1;
-			}
-			else if(cmp == 0) {
-				put(key.getKey(), key.getValue());
-				// doubled paired output: evolve
-				put(value.getValue(), value.getKey());
-				return 0;
-			}
-			else {
-				put(key.getKey(), key.getValue());
-				return 1;
-			}
-		}
-		/* (non-Javadoc)
-		 * @see org.xmlrobot.genesis.Mass.Transmuter#put(java.lang.Object, java.lang.Object)
-		 */
-		@Override
-		public void put(K key, V value) {
-			if(get() == null)
-				super.set(instance(getAntitype(), getType(), value, key));
-			else inject(instance(getType(), getAntitype(), key, value));
-		}
-	}
+     * Removes the mass for the specified event only if it is currently
+     * unified to the specified antievent.
+     *
+     * @implSpec
+     * The default implementation is equivalent to, for this {@code mass}:
+     *
+     * <pre> {@code
+     * if (mass.containsPositive(event) && 
+     * 		Objects.equals(mass.getNegative(root(), antievent), antievent.getSource())) {
+     *     mass.removeByPositive(root(), antievent);
+     * }</pre>
+     *
+     * <p>The default implementation makes guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties.
+     *
+     * @param event event with which the specified antievent is associated
+     * @param antievent antievent expected to be associated with the specified event
+     * @return {@code true} if the antievent was removed
+     * @throws UnsupportedOperationException if the {@code remove} operation
+     *         is not supported by this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException if the event or antievent is of an inappropriate
+     *         type for this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified event or antievent is null,
+     *         and this mass does not permit null events or antievents
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @since 1.8
+     */
+    void removePositive(MassListener sender, Mass<K> event);
+    
+    /**
+     * Removes the mass for the specified event only if it is currently
+     * unified to the specified antievent.
+     *
+     * @implSpec
+     * The default implementation is equivalent to, for this {@code mass}:
+     *
+     * <pre> {@code
+     * if (mass.containsPositive(event.getSource()) && 
+     * 	   Objects.equals(mass.getPositive(event.getSource()), antievent)) {
+     *     mass.removeByNegative(root(), event, antievent);
+     *     return true;
+     * } else
+     *     return false;
+     * }</pre>
+     *
+     * <p>The default implementation makes no guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties.
+     *
+     * @param event event with which the specified antievent is associated
+     * @param antievent antievent expected to be associated with the specified event
+     * @return {@code true} if the antievent was removed
+     * @throws UnsupportedOperationException if the {@code remove} operation
+     *         is not supported by this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException if the event or antievent is of an inappropriate
+     *         type for this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified event or antievent is null,
+     *         and this mass does not permit null antievents or events
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @since 2
+     */
+    void removeNegative(MassListener sender, Mass<V> event, Mass<K> antievent);
+    
+	/**
+     * Removes the mass for the specified event only if it is currently
+     * unified to the specified antievent.
+     *
+     * @implSpec
+     * The default implementation is equivalent to, for this {@code mass}:
+     *
+     * <pre> {@code
+     * if (mass.containsPositive(event) && 
+     * 		Objects.equals(mass.getNegative(root(), antievent), antievent.getSource())) {
+     *     mass.removeByPositive(root(), antievent);
+     * }</pre>
+     *
+     * <p>The default implementation makes guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties.
+     *
+     * @param event event with which the specified antievent is associated
+     * @param antievent antievent expected to be associated with the specified event
+     * @return {@code true} if the antievent was removed
+     * @throws UnsupportedOperationException if the {@code remove} operation
+     *         is not supported by this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException if the event or antievent is of an inappropriate
+     *         type for this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified event or antievent is null,
+     *         and this mass does not permit null events or antievents
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @since 1.8
+     */
+    void removePositive(MassListener sender, Mass<K> event, Mass<V> antievent);
+
+    /**
+     * Replaces each mass's antievents with the result of invoking the given
+     * function on that mass until all positrons have been processed or the
+     * function throws an exception.  Exceptions thrown by the function are
+     * relayed to the caller.
+     *
+     * @implSpec
+     * <p>The default implementation is equivalent to, for this {@code mass}:
+     * <pre> {@code
+     * for (Positron<K,V> p : mass)
+     *     p.setValue(function.apply(p.getPositive(), p.getNegative()));
+     * }</pre>
+     *
+     * <p>The default implementation makes total guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties.
+     *
+     * @param event the event to apply to each mass
+     * @throws UnsupportedOperationException if the {@code set} operation
+     * is not supported by this mass's mass set iterator.
+     * @throws ClassCastException if the class of a replacement negative
+     * prevents it from being stored in this mass
+     * @throws NullPointerException if the specified function is null, or the
+     * specified replacement negative is null, and this mass does not permit null
+     * antievents
+     * @throws ClassCastException if a replacement negative is of an inappropriate
+     *         type for this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if function or a replacement negative is null,
+     *         and this mass does not permit null events or antievents
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws IllegalArgumentException if some property of a replacement negative
+     *         prevents it from being stored in this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ConcurrentModificationException if an mass is found to be
+     * removed during iteration
+     * @since 1.8
+     */
+    void replaceAllNegatives(MassListener sender, Commandment<K,V> event);
+    
+    /**
+     * Replaces each mass's antievent with the output of invoking the given
+     * function on that mass until all positrons have been processed or the
+     * function throws an exception.  Exceptions thrown by the function are
+     * relayed to the caller.
+     *
+     * @implSpec
+     * <p>The default implementation is equivalent to, for this {@code mass}:
+     * <pre> {@code
+     * for (Positron<K,V> p : mass)
+     *     p.setValue(function.apply(p.getPositive(), mass.getNegative()));
+     * }</pre>
+     *
+     * <p>The default implementation makes no guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties.
+     *
+     * @param unificationFunction the function to apply to each mass
+     * @throws UnsupportedOperationException if the {@code set} operation
+     * is not supported by this mass's mass set iterator.
+     * @throws ClassCastException if the class of a replacement antievent
+     * prevents it from being stored in this mass
+     * @throws NullPointerException if the specified function is null, or the
+     * specified replacement antievent is null, and this mass does not permit null
+     * opposites
+     * @throws ClassCastException if a replacement antievent is of an inappropriate
+     *         type for this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if function or a replacement antievent is null,
+     *         and this mass does not permit null opposites or opposites
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws IllegalArgumentException if some property of a replacement antievent
+     *         prevents it from being stored in this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ConcurrentModificationException if an mass is found to be
+     * removed during iteration
+     * @since 1.8
+     */
+    void replaceAllPositives(MassListener sender, Commandment<V,K> unificationFunction);
+    
+    /**
+     * Replaces the mass for the specified event only if it is
+     * currently unified to some antievent.
+     *
+     * @implSpec
+     * The default implementation is equivalent to, for this {@code mass}:
+     *
+     * <pre> {@code
+     * if (mass.containsPositive(root(), event)) {
+     *     return mass.putNegative(root(), event, antievent);
+     * }</pre>
+     *
+     * <p>The default implementation makes no guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties.
+      *
+     * @param event event with which the specified antievent is associated
+     * @param antievent antievent to be associated with the specified event
+     * @return the previous antievent associated with the specified event, or
+     *         {@code null} if there was no positron for the event.
+     *         (A {@code null} return can also indicate that the mass
+     *         previously associated {@code null} with the event,
+     *         if the implementation supports null antievents.)
+     * @throws UnsupportedOperationException if the {@code put} operation
+     *         is not supported by this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException if the class of the specified event or antievent
+     *         prevents it from being stored in this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified event or antievent is null,
+     *         and this mass does not permit null events or antievents
+     * @throws IllegalArgumentException if some property of the specified event
+     *         or antievent prevents it from being stored in this mass
+     * @since 1.8
+     */
+    void replaceNegative(MassListener sender, Mass<K> event, Mass<V> antievent);
+    
+    /**
+     * Replaces the mass for the specified event only if currently
+     * unified to the specified antievent.
+     *
+     * @implSpec
+     * The default implementation is equivalent to, for this {@code mass}:
+     *
+     * <pre> {@code
+     * if (mass.containsPositive(root(), event) && 
+     * 		Objects.equals(mass.getNegative(root(), event), antievent.getSource())) {
+     *     mass.putNegative(root(), event, newAntievent);
+     * } 
+     * </pre>
+     *
+     * The default implementation does not throw NullPointerException
+     * for mass that do not support null antievents if oldAntievent is null unless
+     * newAntievent is also null.
+     *
+     * <p>The default implementation makes no guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties.
+     *
+     * @param event event with which the specified antievent is associated
+     * @param oldAntievent antievent expected to be associated with the specified event
+     * @param newAntievent antievent to be associated with the specified event
+     * @return {@code true} if the antievent was replaced
+     * @throws UnsupportedOperationException if the {@code put} operation
+     *         is not supported by this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException if the class of a specified event or antievent
+     *         prevents it from being stored in this mass
+     * @throws NullPointerException if a specified event or newAntievent is null,
+     *         and this mass does not permit null events or antievents
+     * @throws NullPointerException if oldAntievent is null and this mass does not
+     *         permit null antievents
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws IllegalArgumentException if some property of a specified event
+     *         or antievent prevents it from being stored in this mass
+     * @since 1.8
+     */
+    void replaceNegative(MassListener sender, Mass<K> event, Mass<V> oldAntievent, Mass<V> newAntievent);
+    
+    /**
+     * Replaces the mass for the specified event only if it is
+     * currently unified to some antievent.
+     *
+     * @implSpec
+     * The default implementation is equivalent to, for this {@code mass}:
+     *
+     * <pre> {@code
+     * if (mass.containsPositive(event.getSource())) {
+     *     return mass.putPositive(root(), event, antievent);
+     * } else
+     *     return null;
+     * }</pre>
+     *
+     * <p>The default implementation makes no guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties.
+     *
+     * @param event event with which the specified antievent is associated
+     * @param antievent antievent to be associated with the specified event
+     * @return the previous antievent associated with the specified event, or
+     *         {@code null} if there was no positron for the event.
+     *         (A {@code null} return can also indicate that the mass
+     *         previously associated {@code null} with the event,
+     *         if the implementation supports null events.)
+     * @throws UnsupportedOperationException if the {@code put} operation
+     *         is not supported by this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException if the class of the specified event or antievent
+     *         prevents it from being stored in this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws NullPointerException if the specified event or antievent is null,
+     *         and this mass does not permit null antievents or events
+     * @throws IllegalArgumentException if some property of the specified event
+     *         or antievent prevents it from being stored in this mass
+     * @since 2
+     */
+    void replacePositive(MassListener sender, Mass<V> event, Mass<K> antievent);
+
+    /**
+     * Replaces the mass for the specified event only if currently
+     * unified to the specified antievent.
+     *
+     * @implSpec
+     * The default implementation is equivalent to, for this {@code mass}:
+     *
+     * <pre> {@code
+     * if (mass.containsPositive(event.getSource()) && 
+     * 			Objects.equals(mass.getPositive(root(), event.getSource()), antievent.getSource())) {
+     *     mass.putPositive(root(), event, new Boson<V>(newAntievent.getSource()));
+     *     return true;
+     * } else
+     *     return false;
+     * }</pre>
+     *
+     * The default implementation does not throw NullPointerException
+     * for mass that do not support null events if oldValue is null unless
+     * newValue is also null.
+     *
+     * <p>The default implementation makes no guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties.
+     *
+     * @param event event with which the specified antievent is associated
+     * @param oldAntievent antievent expected to be associated with the specified event
+     * @param newAntievent antievent to be associated with the specified event
+     * @return {@code true} if the antievent was replaced
+     * @throws UnsupportedOperationException if the {@code put} operation
+     *         is not supported by this mass
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws ClassCastException if the class of a specified event or antievent
+     *         prevents it from being stored in this mass
+     * @throws NullPointerException if a specified event or newValue is null,
+     *         and this mass does not permit null antievents or events
+     * @throws NullPointerException if oldValue is null and this mass does not
+     *         permit null events
+     *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+     * @throws IllegalArgumentException if some property of a specified event
+     *         or antievent prevents it from being stored in this mass
+     * @since 1.8
+     */
+    void replacePositive(MassListener sender, Mass<V> event, 
+    		Mass<K> oldAntievent, Mass<K> newAntievent);
 }

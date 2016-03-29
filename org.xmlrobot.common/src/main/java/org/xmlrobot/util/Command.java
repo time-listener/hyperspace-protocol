@@ -15,6 +15,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "command")
 @XmlEnum(String.class)
 public enum Command {
+	
 	/**
 	 * The entity has been instantiated.
 	 */
@@ -28,18 +29,13 @@ public enum Command {
 	/**
 	 * The entity has been created.
 	 */
-	@XmlEnumValue(value = "push")
-	PUSH,
+	@XmlEnumValue(value = "listen")
+	LISTEN,
 	/**
 	 * Mass manipulation.
 	 */
 	@XmlEnumValue(value = "order")
 	ORDER,
-	/**
-	 * Sends entity.
-	 */
-	@XmlEnumValue(value = "send")
-	SEND,
 	/**
 	 * Liberates entity from inheritance.
 	 */
@@ -51,6 +47,11 @@ public enum Command {
 	@XmlEnumValue(value = "resurrection")
 	RESURRECTION,
 	/**
+	 * Sends entity.
+	 */
+	@XmlEnumValue(value = "send")
+	SEND,
+	/**
 	 * Submit entity to the inheritance cycle.
 	 */
 	@XmlEnumValue(value = "submit")
@@ -58,8 +59,8 @@ public enum Command {
 	/**
 	 * Entity comes with me.
 	 */
-	@XmlEnumValue(value = "transcend")
-	TRANSCEND,
+	@XmlEnumValue(value = "push")
+	PUSH,
 	/**
 	 * The entity has reached the End of Cycle.
 	 */
