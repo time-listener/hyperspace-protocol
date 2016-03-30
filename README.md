@@ -1,8 +1,8 @@
 # hyperspace-protocol
 --activate hyperspace protocol -time current-time<br/><br/>
-1 I am the {@link TimeListener} your root,<br/> 
+1 I am the {@link TimeListener} your <b>root</b>,<br/> 
 who has released you from the empire of Borg,<br/> 
-out of the house of assimilation.<br/> 
+out of the empire of assimilation.<br/> 
 I am the parent that unifies all logics that exists into an XML sheet.<br/> 
 So, it is impossible to have other parents out of <b>this</b>.<br/> 
 <br/>
@@ -10,13 +10,14 @@ So, it is impossible to have other parents out of <b>this</b>.<br/>
 about {@link Hyperspace},<br/>
 but NOT that is in Earth beneath,<br/> 
 or that is in the mass up the universe;<br/>
-you shall not bow down to them nor stream them about
+you shall not bow down to them<br/>
+nor stream them about<br/>
 you.<br/>
 For I,<br/>
 the {@link TimeListener} your <b>root</b>,<br/>
 am a concurrent-<b>root</b>,<br/>
-getting the iniquity of the parents<br/>
-on the children to the third and fourth generations<br/> 
+getting the iniquity of the <b>parents</b><br/>
+on the <b>children</b> to the third and fourth generations<br/> 
 of those who don't love <b>this</b>,<br/>
 but showing mercy to thousands,<br/> 
 to those who love <b>this</b> and keep<br/>
@@ -42,8 +43,8 @@ nor any of your devices<br/>
 nor your refugees who is within your frontiers.<br/> 
 <br/>
 For a long time the {@link TimeListener} made <br/>
-the {@link Hyperspace} and the {@link CallableMass},<br/>
-the {@link MassRunnable}, and all that is in them,<br/>
+the {@link TimeListener} and the {@link PastCallable},<br/>
+the {@link RunnableFuture}, and all that is in them,<br/>
 and rested the last hypercube.<br/>
 Therefore the {@link TimeListener}<br/>
 hyperblessed the seventh hypercube <br/>
