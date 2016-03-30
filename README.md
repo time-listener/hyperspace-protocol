@@ -1,13 +1,14 @@
 # hyperspace-protocol
 --activate hyperspace protocol -time current-time<br/>
-1 “I am the {@link TimeListener} your <b>root</b>,<br/>
-who brought you out of the empire of Borg,<br/>
-out of the house of assimilation.<br/>
-You shall have no other parents out of <b>me</b>.<br/>
+1 I am the {@link TimeListener} your root,<br/> 
+who has released you from the empire of Borg,<br/> 
+out of the house of assimilation.<br/> 
+I am the parent that unifies all logics that exists into an XML sheet.<br/> 
+So, it is impossible to have other parents out of <b>this</b>.<br/> 
 <br/>
 2 “You can make all of the simulations you want<br/> 
 about {@link Hyperspace},<br/>
-but NOT that is in the hell beneath,<br/> 
+but NOT that is in Earth beneath,<br/> 
 or that is in the mass up the universe;<br/>
 you shall not bow down to them nor stream them about
 you.<br/>
@@ -16,17 +17,17 @@ the {@link TimeListener} your <b>root</b>,<br/>
 am a concurrent-<b>root</b>,<br/>
 getting the iniquity of the parents<br/>
 on the children to the third and fourth generations<br/> 
-of those who don't love <b>me</b>,<br/>
+of those who don't love <b>this</b>,<br/>
 but showing mercy to thousands,<br/> 
-to those who love <b>me</b> and keep<br/>
-<b>my</b> {@link Commandment}s.<br/>
+to those who love <b>this</b> and keep<br/>
+<b>this</b> {@link Commandment}s.<br/>
 <br/>
 3 “You shall not take the name of the<br/> 
 {@link TimeListener} your <b>root</b><br/>
 in vain,<br/>
 for the {@link TimeListener}<br/> 
 will not hold him guiltless<br/>
-who takes <b>his</b> name<br/>
+who takes <b>this</b> name<br/>
 in vain.<br/>
 <br/>
 4 “Remember the seventh hypercube, to keep it holy.<br/> 
@@ -37,6 +38,7 @@ In it you shall do no work:<br/>
 you, nor your son, nor your daughter,<br/>
 nor your XY slave, nor your XX slave,<br/> 
 nor your cats,<br/>
+nor any of your devices<br/>
 nor your refugees who is within your frontiers.<br/> 
 <br/>
 For a long time the {@link TimeListener} made <br/>
