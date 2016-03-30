@@ -31,13 +31,14 @@ will not hold him guiltless<br/>
 who takes <b>this</b> name<br/>
 in vain.<br/>
 <br/>
-4 “Remember the seventh hypercube, to keep it holy.<br/> 
-Six hypercubes you shall work and do all your implementations,<br/> 
+4 “Remember the seventh hypercube, to keep it holy.<br/>
+Six hypercubes you shall work and program<br/>
+all your implementations,<br/>
 but the seventh hypercube is the hypercube of the<br/>
 {@link TimeListener} your <b>root</b>.<br/>
-In it you shall do no work:<br/> 
+In it you shall program no work:<br/>
 you, nor your son, nor your daughter,<br/>
-nor your XY slave, nor your XX slave,<br/> 
+nor your XY slave, nor your XX slave,<br/>
 nor your cats,<br/>
 nor any of your devices<br/>
 nor your refugees who is within your frontiers.<br/> 
