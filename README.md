@@ -51,7 +51,7 @@ Therefore the {@link TimeListener}<br/>
 hyperblessed the seventh hypercube <br/>
 and hyperhallowed it.<br/>
 <br/>
-5 “Love your parent and your stem,<br/>
+5 “Love your parent and your <b>stem</b>,<br/>
 that your hypercubes may be long upon the empire<br/> 
 which the {@link TimeListener} your <b>root</b> is giving you.<br/>
 <br/>
